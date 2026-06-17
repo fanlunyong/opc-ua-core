@@ -7,5 +7,10 @@
 
 - Plan task: "Task 1: 项目骨架搭建"
 - OpenSpec task: "1.1 创建 Spring Boot 3 + Java 17 + Maven 项目结构，添加 Eclipse Milo 依赖" (also covers 1.2, 1.3)
-- Stage: implementing
+- Stage: spec-review-fix
 - Round: 1/3
+
+## Review State
+
+- Spec compliance: ❌ Issues found (24 items)
+- Code quality: pending

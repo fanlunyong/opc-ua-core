@@ -11,6 +11,9 @@ public class NodeConfig {
     /** 显示名称 */
     private String displayName;
 
+    /** 数据类型（可选） */
+    private String dataType;
+
     /** 是否启用质量检查，默认 false */
     private boolean qualityCheck = false;
 
@@ -33,6 +36,14 @@ public class NodeConfig {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public String getDataType() {
+        return dataType;
+    }
+
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
     }
 
     public boolean isQualityCheck() {

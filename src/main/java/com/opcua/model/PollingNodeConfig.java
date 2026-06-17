@@ -11,8 +11,11 @@ public class PollingNodeConfig {
     /** 显示名称 */
     private String displayName;
 
+    /** 数据类型（可选） */
+    private String dataType;
+
     /** 轮询间隔（毫秒），默认 5000 */
-    private int intervalMs = 5000;
+    private int interval = 5000;
 
     /** 是否启用质量检查，默认 false */
     private boolean qualityCheck = false;
@@ -38,12 +41,20 @@ public class PollingNodeConfig {
         this.displayName = displayName;
     }
 
-    public int getIntervalMs() {
-        return intervalMs;
+    public String getDataType() {
+        return dataType;
     }
 
-    public void setIntervalMs(int intervalMs) {
-        this.intervalMs = intervalMs;
+    public void setDataType(String dataType) {
+        this.dataType = dataType;
+    }
+
+    public int getInterval() {
+        return interval;
+    }
+
+    public void setInterval(int interval) {
+        this.interval = interval;
     }
 
     public boolean isQualityCheck() {

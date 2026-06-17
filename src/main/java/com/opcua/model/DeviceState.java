@@ -8,27 +8,24 @@ import java.time.Instant;
 public class DeviceState {
 
     private final String deviceId;
-    private final ConnectionState connectionState;
-    private final int activeConnections;
-    private final int reconnectCount;
-    private final Instant lastConnectedAt;
-    private final String lastError;
+    private final ConnectionState state;
+    private final Instant connectedSince;
+    private final Instant lastDataReceived;
+    private final String message;
 
     /**
      * 全参构造函数。
      */
     public DeviceState(String deviceId,
-                       ConnectionState connectionState,
-                       int activeConnections,
-                       int reconnectCount,
-                       Instant lastConnectedAt,
-                       String lastError) {
+                       ConnectionState state,
+                       Instant connectedSince,
+                       Instant lastDataReceived,
+                       String message) {
         this.deviceId = deviceId;
-        this.connectionState = connectionState;
-        this.activeConnections = activeConnections;
-        this.reconnectCount = reconnectCount;
-        this.lastConnectedAt = lastConnectedAt;
-        this.lastError = lastError;
+        this.state = state;
+        this.connectedSince = connectedSince;
+        this.lastDataReceived = lastDataReceived;
+        this.message = message;
     }
 
     // --- Getters ---
@@ -37,33 +34,29 @@ public class DeviceState {
         return deviceId;
     }
 
-    public ConnectionState getConnectionState() {
-        return connectionState;
+    public ConnectionState getState() {
+        return state;
     }
 
-    public int getActiveConnections() {
-        return activeConnections;
+    public Instant getConnectedSince() {
+        return connectedSince;
     }
 
-    public int getReconnectCount() {
-        return reconnectCount;
+    public Instant getLastDataReceived() {
+        return lastDataReceived;
     }
 
-    public Instant getLastConnectedAt() {
-        return lastConnectedAt;
-    }
-
-    public String getLastError() {
-        return lastError;
+    public String getMessage() {
+        return message;
     }
 
     @Override
     public String toString() {
         return "DeviceState{" +
                 "deviceId='" + deviceId + '\'' +
-                ", connectionState=" + connectionState +
-                ", activeConnections=" + activeConnections +
-                ", reconnectCount=" + reconnectCount +
+                ", state=" + state +
+                ", connectedSince=" + connectedSince +
+                ", lastDataReceived=" + lastDataReceived +
                 '}';
     }
 }

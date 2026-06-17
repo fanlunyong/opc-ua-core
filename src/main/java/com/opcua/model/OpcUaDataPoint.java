@@ -12,6 +12,7 @@ public class OpcUaDataPoint {
     private final Object value;
     private final String dataType;
     private final Quality quality;
+    private final boolean qualityCheck;
     private final String statusCode;
     private final Instant sourceTimestamp;
     private final Instant serverTimestamp;
@@ -24,6 +25,7 @@ public class OpcUaDataPoint {
                           Object value,
                           String dataType,
                           Quality quality,
+                          boolean qualityCheck,
                           String statusCode,
                           Instant sourceTimestamp,
                           Instant serverTimestamp) {
@@ -32,6 +34,7 @@ public class OpcUaDataPoint {
         this.value = value;
         this.dataType = dataType;
         this.quality = quality;
+        this.qualityCheck = qualityCheck;
         this.statusCode = statusCode;
         this.sourceTimestamp = sourceTimestamp;
         this.serverTimestamp = serverTimestamp;
@@ -59,6 +62,10 @@ public class OpcUaDataPoint {
         return quality;
     }
 
+    public boolean isQualityCheck() {
+        return qualityCheck;
+    }
+
     public String getStatusCode() {
         return statusCode;
     }
@@ -78,6 +85,7 @@ public class OpcUaDataPoint {
                 ", displayName='" + displayName + '\'' +
                 ", value=" + value +
                 ", quality=" + quality +
+                ", qualityCheck=" + qualityCheck +
                 '}';
     }
 }

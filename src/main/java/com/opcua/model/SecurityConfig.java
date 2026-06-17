@@ -8,14 +8,11 @@ public class SecurityConfig {
     /** 安全策略，默认 None */
     private String policy = "None";
 
-    /** 安全模式，默认 None */
-    private String mode = "None";
-
     /** 客户端证书路径 */
-    private String certificate;
+    private String certificatePath;
 
-    /** 证书密码 */
-    private String certificatePassword;
+    /** 客户端私钥路径 */
+    private String privateKeyPath;
 
     /** 用户名认证 */
     private String username;
@@ -33,7 +30,7 @@ public class SecurityConfig {
      * @return true 如果启用了安全认证
      */
     public boolean isSecure() {
-        return (certificate != null && !certificate.isBlank())
+        return (certificatePath != null && !certificatePath.isBlank())
                 || (username != null && !username.isBlank());
     }
 
@@ -47,28 +44,20 @@ public class SecurityConfig {
         this.policy = policy;
     }
 
-    public String getMode() {
-        return mode;
+    public String getCertificatePath() {
+        return certificatePath;
     }
 
-    public void setMode(String mode) {
-        this.mode = mode;
+    public void setCertificatePath(String certificatePath) {
+        this.certificatePath = certificatePath;
     }
 
-    public String getCertificate() {
-        return certificate;
+    public String getPrivateKeyPath() {
+        return privateKeyPath;
     }
 
-    public void setCertificate(String certificate) {
-        this.certificate = certificate;
-    }
-
-    public String getCertificatePassword() {
-        return certificatePassword;
-    }
-
-    public void setCertificatePassword(String certificatePassword) {
-        this.certificatePassword = certificatePassword;
+    public void setPrivateKeyPath(String privateKeyPath) {
+        this.privateKeyPath = privateKeyPath;
     }
 
     public String getUsername() {
@@ -91,8 +80,7 @@ public class SecurityConfig {
     public String toString() {
         return "SecurityConfig{" +
                 "policy='" + policy + '\'' +
-                ", mode='" + mode + '\'' +
-                ", certificate='" + certificate + '\'' +
+                ", certificatePath='" + certificatePath + '\'' +
                 ", username='" + username + '\'' +
                 '}';
     }

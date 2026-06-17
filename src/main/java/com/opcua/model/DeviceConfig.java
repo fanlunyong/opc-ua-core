@@ -9,37 +9,37 @@ import java.util.List;
 public class DeviceConfig {
 
     /** 设备标识 */
-    private String id;
+    private String deviceId;
 
     /** 产品标识 */
     private String productId;
 
     /** OPC UA 服务端端点 URL */
-    private String endpoint;
+    private String endpointUrl;
+
+    /** 会话超时（秒），默认 600 */
+    private int sessionTimeout = 600;
+
+    /** 最大连接数，默认 3 */
+    private int maxConnections = 3;
 
     /** 安全认证配置，默认 new SecurityConfig() */
     private SecurityConfig security = new SecurityConfig();
 
-    /** 连接池配置 */
-    private ConnectionPoolConfig connectionPool = new ConnectionPoolConfig();
-
     /** 订阅组列表 */
     private List<SubscriptionGroupConfig> subscriptions = new ArrayList<>();
-
-    /** 轮询节点列表 */
-    private List<PollingNodeConfig> polling = new ArrayList<>();
 
     public DeviceConfig() {
     }
 
     // --- Getters / Setters ---
 
-    public String getId() {
-        return id;
+    public String getDeviceId() {
+        return deviceId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
     public String getProductId() {
@@ -50,12 +50,28 @@ public class DeviceConfig {
         this.productId = productId;
     }
 
-    public String getEndpoint() {
-        return endpoint;
+    public String getEndpointUrl() {
+        return endpointUrl;
     }
 
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
+    public void setEndpointUrl(String endpointUrl) {
+        this.endpointUrl = endpointUrl;
+    }
+
+    public int getSessionTimeout() {
+        return sessionTimeout;
+    }
+
+    public void setSessionTimeout(int sessionTimeout) {
+        this.sessionTimeout = sessionTimeout;
+    }
+
+    public int getMaxConnections() {
+        return maxConnections;
+    }
+
+    public void setMaxConnections(int maxConnections) {
+        this.maxConnections = maxConnections;
     }
 
     public SecurityConfig getSecurity() {
@@ -66,58 +82,11 @@ public class DeviceConfig {
         this.security = security;
     }
 
-    public ConnectionPoolConfig getConnectionPool() {
-        return connectionPool;
-    }
-
-    public void setConnectionPool(ConnectionPoolConfig connectionPool) {
-        this.connectionPool = connectionPool;
-    }
-
     public List<SubscriptionGroupConfig> getSubscriptions() {
         return subscriptions;
     }
 
     public void setSubscriptions(List<SubscriptionGroupConfig> subscriptions) {
         this.subscriptions = subscriptions;
-    }
-
-    public List<PollingNodeConfig> getPolling() {
-        return polling;
-    }
-
-    public void setPolling(List<PollingNodeConfig> polling) {
-        this.polling = polling;
-    }
-
-    /**
-     * 连接池配置。
-     */
-    public static class ConnectionPoolConfig {
-
-        /** 最大连接数，默认 3 */
-        private int maxConnections = 3;
-
-        /** 空闲超时（秒），默认 60 */
-        private int idleTimeoutSeconds = 60;
-
-        public ConnectionPoolConfig() {
-        }
-
-        public int getMaxConnections() {
-            return maxConnections;
-        }
-
-        public void setMaxConnections(int maxConnections) {
-            this.maxConnections = maxConnections;
-        }
-
-        public int getIdleTimeoutSeconds() {
-            return idleTimeoutSeconds;
-        }
-
-        public void setIdleTimeoutSeconds(int idleTimeoutSeconds) {
-            this.idleTimeoutSeconds = idleTimeoutSeconds;
-        }
     }
 }

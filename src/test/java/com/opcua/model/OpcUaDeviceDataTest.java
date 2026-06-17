@@ -22,6 +22,7 @@ class OpcUaDeviceDataTest {
                 42.5,
                 "Double",
                 Quality.Good,
+                true,
                 "0x00000000",
                 now,
                 now
@@ -63,6 +64,7 @@ class OpcUaDeviceDataTest {
                 null,
                 "String",
                 Quality.Uncertain,
+                false,
                 "0x80000000",
                 now,
                 now
