@@ -5,12 +5,16 @@
 
 ## Current Task
 
-- Plan task: "Task 1: 项目骨架搭建"
-- OpenSpec task: "1.1 创建 Spring Boot 3 + Java 17 + Maven 项目结构，添加 Eclipse Milo 依赖" (also covers 1.2, 1.3)
-- Stage: code-quality-review
+- Plan task: "Task 2: MiloClientWrapper"
+- OpenSpec task: "2.1 实现 MiloClientWrapper" (also covers 2.2, 2.3, 2.4)
+- Stage: implementing
 - Round: 1/3
 
 ## Review State
 
-- Spec compliance: ✅ Passed (after 1 fix round)
+- Spec compliance: pending
 - Code quality: pending
+
+## Completed Tasks
+
+- Task 1: ✅ 项目骨架搭建 (spec ✅, code quality ✅)

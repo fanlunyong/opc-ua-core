@@ -1,8 +1,8 @@
 ## 1. 项目骨架搭建
 
-- [ ] 1.1 创建 Spring Boot 3 + Java 17 + Maven 项目结构，添加 Eclipse Milo 依赖
-- [ ] 1.2 配置 YAML 属性绑定类（`OpcUaProperties`），支持 `opcua.devices` 配置结构解析
-- [ ] 1.3 创建核心数据模型类（`OpcUaDeviceData`、`OpcUaDataPoint`、`DeviceConfig`、`NodeConfig`）
+- [x] 1.1 创建 Spring Boot 3 + Java 17 + Maven 项目结构，添加 Eclipse Milo 依赖
+- [x] 1.2 配置 YAML 属性绑定类（`OpcUaProperties`），支持 `opcua.devices` 配置结构解析
+- [x] 1.3 创建核心数据模型类（`OpcUaDeviceData`、`OpcUaDataPoint`、`DeviceConfig`、`NodeConfig`）
 
 ## 2. MiloClientWrapper — Eclipse Milo 封装层
 
