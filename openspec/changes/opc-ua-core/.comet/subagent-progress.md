@@ -5,16 +5,17 @@
 
 ## Current Task
 
-- Plan task: "Task 2: MiloClientWrapper"
-- OpenSpec task: "2.1-2.4 实现 MiloClientWrapper 封装层"
-- Stage: spec-review-fix
+- Plan task: "Task 3: ConnectionManager"
+- OpenSpec task: "3.1-3.3 连接池与会话管理"
+- Stage: implementing
 - Round: 1/3
 
 ## Review State
 
-- Spec compliance: ❌ Issues found (1 CRITICAL + 1 HIGH + 1 MEDIUM + 1 LOW)
+- Spec compliance: pending
 - Code quality: pending
 
 ## Completed Tasks
 
 - Task 1: ✅ 项目骨架搭建 (spec ✅, code quality ✅)
+- Task 2: ✅ MiloClientWrapper (spec ✅, code quality ⚠️ approved)
