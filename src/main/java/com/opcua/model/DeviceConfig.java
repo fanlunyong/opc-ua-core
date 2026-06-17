@@ -23,6 +23,9 @@ public class DeviceConfig {
     /** 最大连接数，默认 3 */
     private int maxConnections = 3;
 
+    /** 空闲超时（秒），默认 300 (= 5 分钟)，≤0 表示永不过期 */
+    private int idleTimeoutSeconds = 300;
+
     /** 安全认证配置，默认 new SecurityConfig() */
     private SecurityConfig security = new SecurityConfig();
 
@@ -77,6 +80,14 @@ public class DeviceConfig {
 
     public void setMaxConnections(int maxConnections) {
         this.maxConnections = maxConnections;
+    }
+
+    public int getIdleTimeoutSeconds() {
+        return idleTimeoutSeconds;
+    }
+
+    public void setIdleTimeoutSeconds(int idleTimeoutSeconds) {
+        this.idleTimeoutSeconds = idleTimeoutSeconds;
     }
 
     public SecurityConfig getSecurity() {

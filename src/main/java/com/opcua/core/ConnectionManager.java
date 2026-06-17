@@ -32,6 +32,25 @@ public class ConnectionManager {
     /** 轮询计数器（每设备独立） */
     private final ConcurrentHashMap<String, AtomicInteger> roundRobinCounters = new ConcurrentHashMap<>();
 
+    /** 连接信号量（每设备独立），许可数 = maxConnections */
+    private final ConcurrentHashMap<String, java.util.concurrent.Semaphore> semaphores = new ConcurrentHashMap<>();
+
+    /** 每个 wrapper 的最后使用时间（用于空闲驱逐） */
+    private final java.util.Map<MiloClientWrapper, Long> lastUsedTimes = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** 空闲连接驱逐调度器 */
+    private final java.util.concurrent.ScheduledExecutorService evictionScheduler =
+            java.util.concurrent.Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r, "cm-eviction");
+                t.setDaemon(true);
+                return t;
+            });
+
+    public ConnectionManager() {
+        evictionScheduler.scheduleWithFixedDelay(
+                this::evictIdleConnections, 60, 60, java.util.concurrent.TimeUnit.SECONDS);
+    }
+
     /**
      * 批量启动设备连接。
      * 单个设备连接失败不影响其他设备启动。
@@ -89,6 +108,7 @@ public class ConnectionManager {
 
         // 注册
         devices.put(deviceId, handle);
+        semaphores.put(deviceId, new java.util.concurrent.Semaphore(poolSize));
         roundRobinCounters.put(deviceId, new AtomicInteger(0));
 
         logger.info("设备注册完成: deviceId={}, 连接池大小={}", deviceId, poolSize);
@@ -104,9 +124,12 @@ public class ConnectionManager {
         logger.info("移除设备: deviceId={}", deviceId);
 
         roundRobinCounters.remove(deviceId);
+        java.util.concurrent.Semaphore semaphore = semaphores.remove(deviceId);
         DeviceHandle handle = devices.remove(deviceId);
 
         if (handle != null) {
+            // 清理 lastUsedTimes
+            handle.getWrappers().forEach(lastUsedTimes::remove);
             for (MiloClientWrapper wrapper : handle.getWrappers()) {
                 try {
                     wrapper.disconnect();
@@ -127,22 +150,76 @@ public class ConnectionManager {
      */
     public MiloClientWrapper getClient(String deviceId) {
         DeviceHandle handle = devices.get(deviceId);
-        if (handle == null) {
-            return null;
-        }
+        if (handle == null) return null;
+        if (handle.getWrappers().isEmpty()) return null;
+        return selectWrapper(deviceId);
+    }
 
+    /**
+     * 获取设备连接（带超时）。
+     * @throws ConnectionUnavailableException 连接池耗尽或超时
+     */
+    public MiloClientWrapper acquireClient(String deviceId, long timeoutMs) {
+        java.util.concurrent.Semaphore semaphore = semaphores.get(deviceId);
+        if (semaphore == null) {
+            throw new ConnectionUnavailableException(deviceId, "设备不存在: " + deviceId);
+        }
+        try {
+            if (!semaphore.tryAcquire(timeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS)) {
+                throw new ConnectionUnavailableException(deviceId,
+                        "连接池耗尽，超时 " + timeoutMs + "ms: deviceId=" + deviceId);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ConnectionUnavailableException(deviceId, "获取连接被中断: " + deviceId);
+        }
+        MiloClientWrapper wrapper = selectWrapper(deviceId);
+        lastUsedTimes.put(wrapper, System.currentTimeMillis());
+        return wrapper;
+    }
+
+    /** 释放连接 */
+    public void releaseClient(String deviceId) {
+        java.util.concurrent.Semaphore semaphore = semaphores.get(deviceId);
+        if (semaphore != null) {
+            semaphore.release();
+        }
+    }
+
+    // 提取轮询选择逻辑
+    private MiloClientWrapper selectWrapper(String deviceId) {
+        DeviceHandle handle = devices.get(deviceId);
         List<MiloClientWrapper> wrappers = handle.getWrappers();
-        if (wrappers.isEmpty()) {
-            return null;
-        }
+        java.util.concurrent.atomic.AtomicInteger counter = roundRobinCounters.get(deviceId);
+        return wrappers.get(counter.getAndIncrement() % wrappers.size());
+    }
 
-        AtomicInteger counter = roundRobinCounters.get(deviceId);
-        if (counter == null) {
-            return wrappers.get(0);
-        }
+    /** 驱逐空闲连接 */
+    public void evictIdleConnections() {
+        long now = System.currentTimeMillis();
+        for (DeviceHandle handle : devices.values()) {
+            String deviceId = handle.getId();
+            DeviceConfig config = handle.getConfig();
+            int idleTimeoutSeconds = config.getIdleTimeoutSeconds();
+            if (idleTimeoutSeconds <= 0) continue;
+            long idleThreshold = idleTimeoutSeconds * 1000L;
 
-        int idx = counter.getAndIncrement() % wrappers.size();
-        return wrappers.get(idx);
+            List<MiloClientWrapper> wrappers = handle.getWrappers();
+            for (int i = 0; i < wrappers.size(); i++) {
+                MiloClientWrapper wrapper = wrappers.get(i);
+                Long lastUsed = lastUsedTimes.getOrDefault(wrapper, 0L);
+                if (lastUsed > 0 && (now - lastUsed) > idleThreshold) {
+                    logger.info("驱逐空闲连接: deviceId={}, idle={}ms", deviceId, now - lastUsed);
+                    try { wrapper.disconnect(); } catch (Exception ignored) {}
+                    // 替换为新 wrapper
+                    MiloClientWrapper newWrapper = new MiloClientWrapper(config);
+                    newWrapper.connect();
+                    wrappers.set(i, newWrapper);
+                    lastUsedTimes.put(newWrapper, now);
+                    lastUsedTimes.remove(wrapper);
+                }
+            }
+        }
     }
 
     /**
@@ -201,6 +278,9 @@ public class ConnectionManager {
 
         devices.clear();
         roundRobinCounters.clear();
+        evictionScheduler.shutdown();
+        semaphores.clear();
+        lastUsedTimes.clear();
         logger.info("所有设备已关闭");
     }
 
