@@ -5,8 +5,8 @@
 
 ## Current Task
 
-- Plan task: "Task 3: ConnectionManager"
-- OpenSpec task: "3.1-3.3 连接池与会话管理"
+- Plan task: "Task 4: DataDispatchEngine + SubscriptionManager"
+- OpenSpec task: "4.1-4.4 数据采集 — 订阅"
 - Stage: implementing
 - Round: 1/3
 
@@ -17,5 +17,6 @@
 
 ## Completed Tasks
 
-- Task 1: ✅ 项目骨架搭建 (spec ✅, code quality ✅)
-- Task 2: ✅ MiloClientWrapper (spec ✅, code quality ⚠️ approved)
+- Task 1: ✅ 项目骨架搭建
+- Task 2: ✅ MiloClientWrapper
+- Task 3: ✅ ConnectionManager
