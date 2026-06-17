@@ -1,0 +1,7 @@
+opcua:
+  enabled: true
+  dispatch:
+    thread-pool-size: 4
+    bucket-count: 8
+    queue-capacity: 1024
+  devices: []
