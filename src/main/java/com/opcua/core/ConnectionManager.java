@@ -173,9 +173,14 @@ public class ConnectionManager {
             Thread.currentThread().interrupt();
             throw new ConnectionUnavailableException(deviceId, "获取连接被中断: " + deviceId);
         }
-        MiloClientWrapper wrapper = selectWrapper(deviceId);
-        lastUsedTimes.put(wrapper, System.currentTimeMillis());
-        return wrapper;
+        try {
+            MiloClientWrapper wrapper = selectWrapper(deviceId);
+            lastUsedTimes.put(wrapper, System.currentTimeMillis());
+            return wrapper;
+        } catch (Exception e) {
+            semaphore.release(); // 释放已获取的许可
+            throw e;
+        }
     }
 
     /** 释放连接 */
@@ -210,7 +215,7 @@ public class ConnectionManager {
                 Long lastUsed = lastUsedTimes.getOrDefault(wrapper, 0L);
                 if (lastUsed > 0 && (now - lastUsed) > idleThreshold) {
                     logger.info("驱逐空闲连接: deviceId={}, idle={}ms", deviceId, now - lastUsed);
-                    try { wrapper.disconnect(); } catch (Exception ignored) {}
+                    try { wrapper.disconnect(); } catch (Exception e) { logger.warn("驱逐空闲连接时断开异常: deviceId={}, error={}", deviceId, e.getMessage()); }
                     // 替换为新 wrapper
                     MiloClientWrapper newWrapper = new MiloClientWrapper(config);
                     newWrapper.connect();
@@ -263,6 +268,17 @@ public class ConnectionManager {
     public void shutdown() {
         logger.info("关闭所有设备连接，设备数={}", devices.size());
 
+        // 最先关闭驱逐调度器，防止在断开过程中触发驱逐操作
+        evictionScheduler.shutdown();
+        try {
+            if (!evictionScheduler.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)) {
+                evictionScheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            evictionScheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+
         for (Map.Entry<String, DeviceHandle> entry : devices.entrySet()) {
             String deviceId = entry.getKey();
             DeviceHandle handle = entry.getValue();
@@ -278,7 +294,6 @@ public class ConnectionManager {
 
         devices.clear();
         roundRobinCounters.clear();
-        evictionScheduler.shutdown();
         semaphores.clear();
         lastUsedTimes.clear();
         logger.info("所有设备已关闭");
