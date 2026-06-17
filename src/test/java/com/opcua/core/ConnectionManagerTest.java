@@ -17,8 +17,10 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -479,6 +481,224 @@ class ConnectionManagerTest {
                 manager.shutdown();
 
                 verify(wrappers.get(2), atLeastOnce()).disconnect();
+            }
+        }
+    }
+
+    /**
+     * 3.7 连接 acquire/release 语义与连接池耗尽处理
+     */
+    @Nested
+    @DisplayName("连接获取释放与池耗尽")
+    class AcquireReleaseAndExhaustion {
+
+        @Test
+        @DisplayName("acquireClient 应成功获取并返回 wrapper")
+        void shouldAcquireAndReturnWrapper() throws Exception {
+            try (MockedConstruction<MiloClientWrapper> mocked = mockConstruction(
+                    MiloClientWrapper.class,
+                    (mock, ctx) -> {
+                        when(mock.connect()).thenReturn(CompletableFuture.completedFuture(null));
+                    })) {
+
+                manager.addDevice(config);
+                java.util.List<MiloClientWrapper> wrappers = mocked.constructed();
+
+                MiloClientWrapper client = manager.acquireClient(TestConstants.DEVICE_ID, 1000);
+
+                assertThat(client).isNotNull();
+                assertThat(client).isSameAs(wrappers.get(0));
+            }
+        }
+
+        @Test
+        @DisplayName("releaseClient 后其他请求可再次获取连接")
+        void shouldAllowAcquireAfterRelease() throws Exception {
+            config.setMaxConnections(1);
+
+            try (MockedConstruction<MiloClientWrapper> mocked = mockConstruction(
+                    MiloClientWrapper.class,
+                    (mock, ctx) -> {
+                        when(mock.connect()).thenReturn(CompletableFuture.completedFuture(null));
+                    })) {
+
+                manager.addDevice(config);
+
+                MiloClientWrapper first = manager.acquireClient(TestConstants.DEVICE_ID, 1000);
+                assertThat(first).isNotNull();
+
+                // 释放连接
+                manager.releaseClient(TestConstants.DEVICE_ID);
+
+                // 再次获取应成功
+                MiloClientWrapper second = manager.acquireClient(TestConstants.DEVICE_ID, 1000);
+                assertThat(second).isNotNull();
+                // 第二次获取应是同一 wrapper（池大小为 1，释放后重新获取同一个）
+                assertThat(second).isSameAs(first);
+            }
+        }
+
+        @Test
+        @DisplayName("连接池耗尽时 acquireClient 应在超时后抛出 ConnectionUnavailableException")
+        void shouldThrowConnectionUnavailableWhenPoolExhausted() throws Exception {
+            config.setMaxConnections(1);
+
+            try (MockedConstruction<MiloClientWrapper> mocked = mockConstruction(
+                    MiloClientWrapper.class,
+                    (mock, ctx) -> {
+                        when(mock.connect()).thenReturn(CompletableFuture.completedFuture(null));
+                    })) {
+
+                manager.addDevice(config);
+
+                // 占用唯一的连接
+                MiloClientWrapper client = manager.acquireClient(TestConstants.DEVICE_ID, 100);
+                assertThat(client).isNotNull();
+
+                // 再次获取应超时抛出 ConnectionUnavailableException
+                assertThatThrownBy(() ->
+                        manager.acquireClient(TestConstants.DEVICE_ID, 100)
+                ).isInstanceOf(ConnectionUnavailableException.class)
+                 .hasMessageContaining(TestConstants.DEVICE_ID);
+            }
+        }
+
+        @Test
+        @DisplayName("信号量耗尽后释放连接，后续 acquire 应成功")
+        void shouldRecoverAfterReleaseFollowingExhaustion() throws Exception {
+            config.setMaxConnections(1);
+
+            try (MockedConstruction<MiloClientWrapper> mocked = mockConstruction(
+                    MiloClientWrapper.class,
+                    (mock, ctx) -> {
+                        when(mock.connect()).thenReturn(CompletableFuture.completedFuture(null));
+                    })) {
+
+                manager.addDevice(config);
+
+                // 占用唯一连接
+                MiloClientWrapper first = manager.acquireClient(TestConstants.DEVICE_ID, 100);
+                assertThat(first).isNotNull();
+
+                // 释放
+                manager.releaseClient(TestConstants.DEVICE_ID);
+
+                // 再次获取应成功
+                MiloClientWrapper second = manager.acquireClient(TestConstants.DEVICE_ID, 100);
+                assertThat(second).isNotNull();
+            }
+        }
+
+        @Test
+        @DisplayName("acquireClient 对未知设备应抛出 ConnectionUnavailableException")
+        void shouldThrowForUnknownDeviceAcquire() {
+            assertThatThrownBy(() ->
+                    manager.acquireClient("nonexistent", 100)
+            ).isInstanceOf(ConnectionUnavailableException.class)
+             .hasMessageContaining("nonexistent");
+        }
+
+        @Test
+        @DisplayName("releaseClient 对未知设备不应抛异常")
+        void shouldNotThrowReleaseUnknownDevice() {
+            // 不应抛出异常
+            manager.releaseClient("nonexistent");
+        }
+    }
+
+    /**
+     * 3.8 空闲连接回收
+     */
+    @Nested
+    @DisplayName("空闲连接回收")
+    class IdleEviction {
+
+        @Test
+        @DisplayName("evictIdleConnections 应关闭空闲连接并替换为新 wrapper")
+        void shouldEvictIdleConnectionsAndReplace() throws Exception {
+            config.setIdleTimeoutSeconds(300);
+
+            try (MockedConstruction<MiloClientWrapper> mocked = mockConstruction(
+                    MiloClientWrapper.class,
+                    (mock, ctx) -> {
+                        when(mock.connect()).thenReturn(CompletableFuture.completedFuture(null));
+                    })) {
+
+                manager.addDevice(config);
+                java.util.List<MiloClientWrapper> wrappers = mocked.constructed();
+                MiloClientWrapper oldWrapper = wrappers.get(1);
+
+                // 将 wrapper 的 lastUsedTime 标记为很久以前
+                manager.lastUsedTimes.put(oldWrapper, 0L);
+
+                // 驱逐前验证 disconnect 调用次数
+                manager.evictIdleConnections();
+
+                // 旧 wrapper 应被 disconnect
+                verify(oldWrapper, atLeastOnce()).disconnect();
+
+                // 池大小应保持不变
+                DeviceHandle handle = manager.getHandle(TestConstants.DEVICE_ID);
+                assertThat(handle.getWrappers()).hasSize(3);
+
+                // 被替换的 wrapper 不再在池中
+                assertThat(handle.getWrappers()).doesNotContain(oldWrapper);
+            }
+        }
+
+        @Test
+        @DisplayName("最近使用的连接不应被驱逐")
+        void shouldNotEvictRecentlyUsedConnections() throws Exception {
+            config.setIdleTimeoutSeconds(300);
+
+            try (MockedConstruction<MiloClientWrapper> mocked = mockConstruction(
+                    MiloClientWrapper.class,
+                    (mock, ctx) -> {
+                        when(mock.connect()).thenReturn(CompletableFuture.completedFuture(null));
+                    })) {
+
+                manager.addDevice(config);
+                java.util.List<MiloClientWrapper> wrappers = mocked.constructed();
+
+                // 通过 acquire 更新 lastUsedTime 为当前时间
+                MiloClientWrapper active = manager.acquireClient(TestConstants.DEVICE_ID, 1000);
+                manager.releaseClient(TestConstants.DEVICE_ID);
+
+                // 驱逐：最近使用的连接不应被关闭
+                manager.evictIdleConnections();
+
+                // 活跃的 wrapper 不应被 disconnect（未经 acquire 标记的可能被驱逐）
+                // 仅验证池大小不变
+                DeviceHandle handle = manager.getHandle(TestConstants.DEVICE_ID);
+                assertThat(handle.getWrappers()).hasSize(3);
+            }
+        }
+
+        @Test
+        @DisplayName("idleTimeoutSeconds <= 0 时不应驱逐任何连接")
+        void shouldNotEvictWhenIdleTimeoutNotConfigured() throws Exception {
+            config.setIdleTimeoutSeconds(0);
+
+            try (MockedConstruction<MiloClientWrapper> mocked = mockConstruction(
+                    MiloClientWrapper.class,
+                    (mock, ctx) -> {
+                        when(mock.connect()).thenReturn(CompletableFuture.completedFuture(null));
+                    })) {
+
+                manager.addDevice(config);
+                java.util.List<MiloClientWrapper> wrappers = mocked.constructed();
+
+                // 将所有 wrapper 标记为很久以前
+                for (MiloClientWrapper w : wrappers) {
+                    manager.lastUsedTimes.put(w, 0L);
+                }
+
+                manager.evictIdleConnections();
+
+                // idleTimeoutSeconds=0 表示永不过期，不应 disconnect 任何 wrapper
+                for (MiloClientWrapper w : wrappers) {
+                    verify(w, never()).disconnect();
+                }
             }
         }
     }

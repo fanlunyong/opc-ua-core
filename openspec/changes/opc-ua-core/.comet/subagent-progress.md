@@ -7,12 +7,12 @@
 
 - Plan task: "Task 3: ConnectionManager"
 - OpenSpec task: "3.1-3.3 连接池与会话管理"
-- Stage: implementing
+- Stage: spec-review-fix
 - Round: 1/3
 
 ## Review State
 
-- Spec compliance: pending
+- Spec compliance: ❌ Issues found (3 missing features)
 - Code quality: pending
 
 ## Completed Tasks
