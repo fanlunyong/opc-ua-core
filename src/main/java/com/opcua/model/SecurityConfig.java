@@ -17,6 +17,10 @@ public class SecurityConfig {
     @JsonIgnore
     private String privateKeyPath;
 
+    /** 证书私钥密码（无密码保护时为空字符串） */
+    @JsonIgnore
+    private String certificatePassword;
+
     /** 用户名认证 */
     private String username;
 
@@ -62,6 +66,14 @@ public class SecurityConfig {
 
     public void setPrivateKeyPath(String privateKeyPath) {
         this.privateKeyPath = privateKeyPath;
+    }
+
+    public String getCertificatePassword() {
+        return certificatePassword;
+    }
+
+    public void setCertificatePassword(String certificatePassword) {
+        this.certificatePassword = certificatePassword;
     }
 
     public String getUsername() {

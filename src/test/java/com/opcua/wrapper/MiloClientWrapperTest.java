@@ -5,6 +5,8 @@ import com.opcua.model.ConnectionState;
 import com.opcua.model.DeviceConfig;
 import com.opcua.model.SecurityConfig;
 import org.eclipse.milo.opcua.sdk.client.OpcUaClient;
+import org.eclipse.milo.opcua.sdk.client.api.identity.AnonymousProvider;
+import org.eclipse.milo.opcua.sdk.client.api.identity.IdentityProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -16,11 +18,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -358,6 +359,171 @@ class MiloClientWrapperTest {
             wrapper.disconnect();
 
             assertThat(wrapper.isReconnectSchedulerActive()).isFalse();
+        }
+    }
+
+    /**
+     * 2.1 身份提供者构建（证书认证）
+     */
+    @Nested
+    @DisplayName("身份提供者构建")
+    class IdentityProviderBuilding {
+
+        @Test
+        @DisplayName("证书认证配置无效路径时 buildIdentityProvider 不抛异常")
+        void shouldNotThrowForCertificateAuthWithInvalidPaths() {
+            SecurityConfig sec = new SecurityConfig();
+            sec.setPolicy("Basic256Sha256");
+            sec.setCertificatePath("/nonexistent/cert.der");
+            sec.setPrivateKeyPath("/nonexistent/key.pem");
+            config.setSecurity(sec);
+            MiloClientWrapper wrapper = new MiloClientWrapper(config);
+
+            assertThatCode(() -> wrapper.buildIdentityProvider())
+                    .doesNotThrowAnyException();
+        }
+
+        @Test
+        @DisplayName("证书认证失败时回退到 AnonymousProvider")
+        void shouldFallbackToAnonymousProviderWhenCertLoadFails() {
+            SecurityConfig sec = new SecurityConfig();
+            sec.setPolicy("Basic256Sha256");
+            sec.setCertificatePath("/nonexistent/cert.der");
+            sec.setPrivateKeyPath("/nonexistent/key.pem");
+            config.setSecurity(sec);
+            MiloClientWrapper wrapper = new MiloClientWrapper(config);
+
+            IdentityProvider provider = wrapper.buildIdentityProvider();
+
+            assertThat(provider).isNotNull();
+            assertThat(provider).isInstanceOf(AnonymousProvider.class);
+        }
+
+        @Test
+        @DisplayName("匿名模式下返回 AnonymousProvider")
+        void shouldReturnAnonymousProviderInAnonymousMode() {
+            SecurityConfig sec = new SecurityConfig();
+            sec.setPolicy("None");
+            config.setSecurity(sec);
+            MiloClientWrapper wrapper = new MiloClientWrapper(config);
+
+            IdentityProvider provider = wrapper.buildIdentityProvider();
+
+            assertThat(provider).isInstanceOf(AnonymousProvider.class);
+        }
+
+        @Test
+        @DisplayName("用户名密码模式下返回 UsernameProvider")
+        void shouldReturnUsernameProviderForUsernamePasswordAuth() {
+            SecurityConfig sec = new SecurityConfig();
+            sec.setPolicy("Basic256Sha256");
+            sec.setUsername("test-user");
+            sec.setPassword("test-password");
+            config.setSecurity(sec);
+            MiloClientWrapper wrapper = new MiloClientWrapper(config);
+
+            IdentityProvider provider = wrapper.buildIdentityProvider();
+
+            assertThat(provider).isNotNull();
+            assertThat(provider).isNotInstanceOf(AnonymousProvider.class);
+        }
+    }
+
+    /**
+     * 2.3 connect 失败自动重连
+     */
+    @Nested
+    @DisplayName("连接失败重连")
+    class ConnectFailureReconnect {
+
+        @Test
+        @DisplayName("connect 失败后状态应变为 RECONNECTING")
+        void shouldTransitionToReconnectingWhenConnectFails() throws Exception {
+            MiloClientWrapper wrapper = new MiloClientWrapper(config);
+
+            CompletableFuture<Void> future = wrapper.connect();
+
+            try {
+                future.get(5, TimeUnit.SECONDS);
+            } catch (Exception ignored) {
+                // Expected - connection refused
+            }
+
+            assertThat(wrapper.getState()).isEqualTo(ConnectionState.RECONNECTING);
+        }
+
+        @Test
+        @DisplayName("connect 失败后应激活重连调度器")
+        void shouldActivateReconnectSchedulerAfterConnectFailure() throws Exception {
+            MiloClientWrapper wrapper = new MiloClientWrapper(config);
+
+            CompletableFuture<Void> future = wrapper.connect();
+
+            try {
+                future.get(5, TimeUnit.SECONDS);
+            } catch (Exception ignored) {
+                // Expected
+            }
+
+            assertThat(wrapper.isReconnectSchedulerActive()).isTrue();
+        }
+    }
+
+    /**
+     * 2.1 connect RECONNECTING 状态保护
+     */
+    @Nested
+    @DisplayName("连接状态保护")
+    class ConnectStateGuard {
+
+        @Test
+        @DisplayName("RECONNECTING 状态时 connect 应幂等返回")
+        void shouldReturnImmediatelyWhenAlreadyReconnecting() {
+            MiloClientWrapper wrapper = new MiloClientWrapper(config);
+            wrapper.setStateForTest(ConnectionState.RECONNECTING);
+
+            CompletableFuture<Void> future = wrapper.connect();
+
+            assertThat(future).isCompleted();
+            assertThat(wrapper.getState()).isEqualTo(ConnectionState.RECONNECTING);
+        }
+
+        @Test
+        @DisplayName("CONNECTED 状态时 connect 应幂等返回")
+        void shouldReturnImmediatelyWhenAlreadyConnected() {
+            MiloClientWrapper wrapper = new MiloClientWrapper(config);
+            wrapper.setStateForTest(ConnectionState.CONNECTED);
+
+            CompletableFuture<Void> future = wrapper.connect();
+
+            assertThat(future).isCompleted();
+            assertThat(wrapper.getState()).isEqualTo(ConnectionState.CONNECTED);
+        }
+    }
+
+    /**
+     * 2.2 连接指标暴露
+     */
+    @Nested
+    @DisplayName("连接指标")
+    class ConnectionMetrics {
+
+        @Test
+        @DisplayName("初始 lastConnectedTime 应为 0")
+        void shouldHaveZeroLastConnectedTimeInitially() {
+            MiloClientWrapper wrapper = new MiloClientWrapper(config);
+
+            assertThat(wrapper.getLastConnectedTime()).isEqualTo(0L);
+        }
+
+        @Test
+        @DisplayName("lastConnectedTime 为 long 类型且可访问")
+        void shouldExposeLastConnectedTimeAsLong() {
+            MiloClientWrapper wrapper = new MiloClientWrapper(config);
+
+            long time = wrapper.getLastConnectedTime();
+
+            assertThat(time).isGreaterThanOrEqualTo(0L);
         }
     }
 }

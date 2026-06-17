@@ -9,6 +9,7 @@ import org.eclipse.milo.opcua.sdk.client.api.UaSession;
 import org.eclipse.milo.opcua.sdk.client.api.identity.AnonymousProvider;
 import org.eclipse.milo.opcua.sdk.client.api.identity.IdentityProvider;
 import org.eclipse.milo.opcua.sdk.client.api.identity.UsernameProvider;
+import org.eclipse.milo.opcua.sdk.client.api.identity.X509IdentityProvider;
 import org.eclipse.milo.opcua.stack.core.security.SecurityPolicy;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
@@ -16,6 +17,9 @@ import org.eclipse.milo.opcua.stack.core.types.structured.EndpointDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -62,6 +66,7 @@ public class MiloClientWrapper {
     private volatile ScheduledFuture<?> reconnectFuture;
     private final AtomicInteger reconnectCount = new AtomicInteger(0);
     private volatile int consecutiveFailures = 0;
+    private volatile long lastConnectedTime = 0;
 
     /**
      * 构造函数，初始化内部状态为 DISCONNECTED。
@@ -105,6 +110,13 @@ public class MiloClientWrapper {
     }
 
     /**
+     * 获取上次连接成功的时间戳（Unix 毫秒）。
+     */
+    public long getLastConnectedTime() {
+        return lastConnectedTime;
+    }
+
+    /**
      * 注册状态变更监听器。
      *
      * @param listener 状态变更回调
@@ -131,12 +143,18 @@ public class MiloClientWrapper {
             return CompletableFuture.completedFuture(null);
         }
 
+        if (state == ConnectionState.RECONNECTING) {
+            logger.debug("正在重连中，跳过 connect: deviceId={}", config.getDeviceId());
+            return CompletableFuture.completedFuture(null);
+        }
+
         logger.info("开始建立连接: deviceId={}, endpointUrl={}", config.getDeviceId(), config.getEndpointUrl());
 
         try {
             this.client = buildClient();
         } catch (Exception e) {
             logger.error("构建 OpcUaClient 失败: deviceId={}", config.getDeviceId(), e);
+            startReconnect();
             CompletableFuture<Void> failed = new CompletableFuture<>();
             failed.completeExceptionally(e);
             return failed;
@@ -146,6 +164,7 @@ public class MiloClientWrapper {
                 .thenAccept(ignored -> {
                     setState(ConnectionState.CONNECTED);
                     consecutiveFailures = 0;
+                    lastConnectedTime = System.currentTimeMillis();
                     logger.info("连接成功: deviceId={}, endpointUrl={}",
                             config.getDeviceId(), config.getEndpointUrl());
 
@@ -162,6 +181,12 @@ public class MiloClientWrapper {
                             onConnectionLost();
                         }
                     });
+                })
+                .whenComplete((result, ex) -> {
+                    if (ex != null) {
+                        logger.error("初始连接失败，进入重连流程: deviceId={}", config.getDeviceId(), ex);
+                        startReconnect();
+                    }
                 });
     }
 
@@ -344,7 +369,7 @@ public class MiloClientWrapper {
     /**
      * 根据 SecurityConfig 构建 IdentityProvider。
      */
-    private IdentityProvider buildIdentityProvider() {
+    IdentityProvider buildIdentityProvider() {
         SecurityConfig sec = config.getSecurity();
 
         if (isAnonymousMode()) {
@@ -355,10 +380,21 @@ public class MiloClientWrapper {
         if (isCertificateAuth()) {
             logger.info("使用证书认证: deviceId={}, cert={}",
                     config.getDeviceId(), sec.getCertificatePath());
-            // 证书认证：TODO 在后续任务中实现 X509IdentityProvider 的证书加载
-            // 当前阶段暂不支持证书认证，回退到匿名模式
-            logger.warn("证书认证尚未完全实现，回退到匿名模式: deviceId={}", config.getDeviceId());
-            return new AnonymousProvider();
+            try {
+                CertificateLoader loader = CertificateLoader.create()
+                        .setClientCertificate(new File(sec.getCertificatePath()))
+                        .setKeyPairPassword(sec.getCertificatePassword() != null
+                                ? sec.getCertificatePassword() : "");
+                if (sec.getPrivateKeyPath() != null) {
+                    loader.setClientKeyPairFile(new File(sec.getPrivateKeyPath()));
+                }
+                X509Certificate certificate = loader.getClientCertificate();
+                KeyPair keyPair = loader.getClientKeyPair();
+                return new X509IdentityProvider(certificate, keyPair.getPrivate());
+            } catch (Exception e) {
+                logger.error("证书加载失败，回退到匿名模式: deviceId={}", config.getDeviceId(), e);
+                return new AnonymousProvider();
+            }
         }
 
         if (isUsernamePasswordAuth()) {
@@ -397,6 +433,18 @@ public class MiloClientWrapper {
                 logger.warn("未知安全策略: {}, 回退到 None", policy);
                 return SecurityPolicy.None.getUri();
         }
+    }
+
+    /**
+     * 启动重连流程：设置 RECONNECTING 状态并调度首次重连。
+     * 仅当当前未处于 RECONNECTING 状态时生效，避免重复调度。
+     */
+    private void startReconnect() {
+        if (state == ConnectionState.RECONNECTING) {
+            return;
+        }
+        setState(ConnectionState.RECONNECTING);
+        scheduleReconnect();
     }
 
     /**
@@ -460,6 +508,7 @@ public class MiloClientWrapper {
                     .thenAccept(ignored -> {
                         setState(ConnectionState.CONNECTED);
                         consecutiveFailures = 0;
+                        lastConnectedTime = System.currentTimeMillis();
                         logger.info("重连成功: deviceId={}", config.getDeviceId());
 
                         // 重新注册会话活动监听器
