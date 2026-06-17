@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(COMET_ENV=\"/c/Users/fly/.claude/skills/comet/scripts/comet-env.sh\")",
+      "Bash(. \"$COMET_ENV\")",
+      "Bash(echo \"COMET_BASH=$COMET_BASH\")",
+      "Bash(echo \"COMET_GUARD=$COMET_GUARD\")",
+      "Bash(echo \"COMET_STATE=$COMET_STATE\")",
+      "Bash(openspec init:*)",
+      "Bash(openspec new:*)",
+      "Bash(openspec status:*)",
+      "Bash(openspec instructions:*)",
+      "Bash(\"$COMET_BASH\" \"$COMET_STATE\" init opc-ua-core full)",
+      "Bash(\"$COMET_BASH\" \"$COMET_STATE\" check opc-ua-core open)",
+      "Bash(\"$COMET_BASH\" \"$COMET_GUARD\" opc-ua-core open --apply)",
+      "Bash(\"$COMET_BASH\" \"$COMET_STATE\" init opc-ua-forward full)",
+      "Bash(\"$COMET_BASH\" \"$COMET_GUARD\" opc-ua-forward open --apply)",
+      "Bash(\"$COMET_BASH\" \"$COMET_STATE\" init opc-ua-config-management full)",
+      "Bash(\"$COMET_BASH\" \"$COMET_GUARD\" opc-ua-config-management open --apply)",
+      "Bash(\"$COMET_BASH\" \"$COMET_STATE\" next opc-ua-core)",
+      "Bash(\"$COMET_BASH\" \"$COMET_STATE\" check opc-ua-core design)",
+      "Bash(\"$COMET_BASH\" \"$COMET_HANDOFF\" opc-ua-core design --write)",
+      "Bash(\"$COMET_BASH\" \"$COMET_STATE\" set opc-ua-core design_doc docs/superpowers/specs/2026-06-17-opc-ua-core-technical-design.md)",
+      "Bash(\"$COMET_BASH\" \"$COMET_GUARD\" opc-ua-core design --apply)",
+      "Bash(\"$COMET_BASH\" \"$COMET_STATE\" check opc-ua-core build)"
+    ]
+  }
+}
