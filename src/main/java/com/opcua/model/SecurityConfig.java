@@ -1,5 +1,7 @@
 package com.opcua.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * OPC UA 安全认证配置。
  */
@@ -12,12 +14,14 @@ public class SecurityConfig {
     private String certificatePath;
 
     /** 客户端私钥路径 */
+    @JsonIgnore
     private String privateKeyPath;
 
     /** 用户名认证 */
     private String username;
 
     /** 密码认证 */
+    @JsonIgnore
     private String password;
 
     public SecurityConfig() {

@@ -29,6 +29,11 @@ public class DeviceConfig {
     /** 订阅组列表 */
     private List<SubscriptionGroupConfig> subscriptions = new ArrayList<>();
 
+    /**
+     * 轮询节点配置列表（可选）
+     */
+    private List<PollingNodeConfig> polling = new java.util.ArrayList<>();
+
     public DeviceConfig() {
     }
 
@@ -88,5 +93,13 @@ public class DeviceConfig {
 
     public void setSubscriptions(List<SubscriptionGroupConfig> subscriptions) {
         this.subscriptions = subscriptions;
+    }
+
+    public List<PollingNodeConfig> getPolling() {
+        return polling;
+    }
+
+    public void setPolling(List<PollingNodeConfig> polling) {
+        this.polling = polling;
     }
 }
