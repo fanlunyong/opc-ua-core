@@ -53,26 +53,22 @@
 ## 9. 健康检查与监控
 
 - [x] 9.1 实现 `OpcUaHealthIndicator`：注册到 Spring Boot Actuator，检查所有设备连接状态
-- [ ] 9.2 暴露连接指标：当前连接数、重连次数、最后连接时间
 
-<!-- 9.1 实现说明：HealthIndicator 现已暴露 components.opcua.devices.{deviceId}.{state, message?, connectedSince?, lastDataReceived?}。
-     UP/DOWN 判定按 spec health-check 9.1 全部 CONNECTED 或无设备 → UP；任一非 CONNECTED → DOWN。
-     9.2 移回未完成：当前 ConnectionManager.aggregateState 未填充 connectedSince/lastDataReceived/reconnectCount，
-     需在 ConnectionManager + MiloClientWrapper 中增加状态变更追踪。范围扩展到连接管理层，
-     与 10.2-10.4 集成测试一同延期到独立的后续 change（保持本 change 范围聚焦）。 -->
+<!-- 9.2 (连接指标：重连次数、最后连接时间) 已拆分到 follow-up change：
+     openspec/changes/opc-ua-core-hardening/ §6 健康指标完善
+     原因：需要 ConnectionManager + MiloClientWrapper 增加状态变更追踪，范围超出本 change "核心层" 边界。 -->
 
 
 ## 10. 集成测试与验证
 
 - [x] 10.1 编写单元测试：QualityEvaluator、DataMapper、连接池逻辑
-- [ ] 10.2 编写集成测试：使用 Eclipse Milo Example Server 作为模拟设备，验证全链路（连接→订阅→JSON 输出）
-- [ ] 10.3 验证 100+ 设备配置下的连接池行为（压力测试）
-- [ ] 10.4 验证断线重连流程：模拟网络中断 → 重连 → 订阅恢复
 
 <!-- 10.1 covered by 133 unit tests across 10 test classes (QualityEvaluator, DataMapper,
      DataDispatchEngine, SubscriptionManager, ReadWriteHandler, OpcUaService,
      OpcUaHealthIndicator, OpcUaCoreAutoConfiguration, OpcUaDeviceData JSON,
      plus pre-existing ConnectionManager + MiloClientWrapper tests).
 
-     10.2 / 10.3 / 10.4 拆分到独立 follow-up change：openspec/changes/opc-ua-core-hardening/
-     (依据 code review 反馈，连同 9.2 + I3-I6 评审延期项一同处理；本 change 范围聚焦核心层完成)。 -->
+     10.2 (Milo Example Server 集成测试)、10.3 (100+ 设备压测)、10.4 (断线重连验证)
+     已拆分到 follow-up change：openspec/changes/opc-ua-core-hardening/
+     §1-§4。原因：需引入 org.eclipse.milo:sdk-server 测试依赖与 MiloServerRunner，
+     范围超出本 change "核心层实现" 边界。 -->
