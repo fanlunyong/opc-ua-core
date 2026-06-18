@@ -2,7 +2,6 @@ package com.opcua.config;
 
 import com.opcua.model.DeviceConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +9,10 @@ import java.util.List;
 /**
  * OPC UA 配置属性绑定类。
  *
- * <p>绑定前缀 {@code opcua}，支持 YAML 配置中的设备列表解析。</p>
+ * <p>绑定前缀 {@code opcua}，支持 YAML 配置中的设备列表解析。
+ * 由 {@link OpcUaCoreAutoConfiguration} 通过 {@code @EnableConfigurationProperties}
+ * 注册（不再使用 {@code @Component}，避免与 AutoConfig 双重注册）。</p>
  */
-@Component
 @ConfigurationProperties(prefix = "opcua")
 public class OpcUaProperties {
 

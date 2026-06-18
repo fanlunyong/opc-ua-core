@@ -146,11 +146,18 @@ public class ReadWriteHandler {
     }
 
     /**
-     * 关闭调度器，取消所有进行中的任务。
+     * 关闭调度器，取消所有进行中的任务并等待终止（最多 2 秒）。
      */
     public void shutdown() {
         deviceTasks.clear();
         scheduler.shutdownNow();
+        try {
+            if (!scheduler.awaitTermination(2, TimeUnit.SECONDS)) {
+                logger.warn("ReadWriteHandler scheduler 在 2 秒内未完成终止");
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     /**

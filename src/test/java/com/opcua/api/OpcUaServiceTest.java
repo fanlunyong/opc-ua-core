@@ -235,14 +235,19 @@ class OpcUaServiceTest {
     class ShutdownBehavior {
 
         @Test
-        @DisplayName("应依次关闭 ReadWriteHandler、ConnectionManager、DataDispatchEngine")
+        @DisplayName("应依次关闭 SubscriptionManager、ReadWriteHandler、ConnectionManager、DataDispatchEngine")
         void shouldShutdownAllComponents() {
             service.shutdown();
 
+            verify(mockSubMgr).removeAll();
             verify(mockRwHandler).shutdown();
             verify(mockConnMgr).shutdown();
-            // dispatchEngine 是真实实例，shutdown 后 dispatch 不再分发
+            // dispatchEngine 是真实实例：shutdown 后再 dispatch 不应触发 listener
             assertThat(dispatchEngine).isNotNull();
+            // 验证关停后 dispatch 不再触发新工作
+            long droppedBefore = dispatchEngine.getDroppedCount();
+            dispatchEngine.dispatch(createDeviceData());
+            assertThat(dispatchEngine.getDroppedCount()).isEqualTo(droppedBefore);
         }
 
         @Test
@@ -251,6 +256,7 @@ class OpcUaServiceTest {
             service.shutdown();
             service.shutdown();
             // 调用次数累计
+            verify(mockSubMgr, times(2)).removeAll();
             verify(mockRwHandler, times(2)).shutdown();
             verify(mockConnMgr, times(2)).shutdown();
         }

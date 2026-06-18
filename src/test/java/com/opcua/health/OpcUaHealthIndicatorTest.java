@@ -66,7 +66,7 @@ class OpcUaHealthIndicatorTest {
         }
 
         @Test
-        @DisplayName("健康状况包含连接数详情")
+        @DisplayName("健康状况包含连接数详情和 per-device 状态")
         void healthShouldIncludeDetails() {
             Map<String, DeviceState> states = Map.of(
                     "dev1", new DeviceState("dev1", ConnectionState.CONNECTED, Instant.now(), null, null),
@@ -76,7 +76,29 @@ class OpcUaHealthIndicatorTest {
             Health health = indicator.health();
             assertThat(health.getDetails())
                     .containsEntry("totalDevices", 2)
-                    .containsEntry("connectedDevices", 2);
+                    .containsEntry("connectedDevices", 2)
+                    .containsKey("devices");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> devices = (Map<String, Object>) health.getDetails().get("devices");
+            assertThat(devices).containsKeys("dev1", "dev2");
+        }
+
+        @Test
+        @DisplayName("DOWN 时应在 devices 详情中列出异常设备及其状态")
+        void downShouldExposeFailingDeviceState() {
+            Map<String, DeviceState> states = Map.of(
+                    "dev-OK", new DeviceState("dev-OK", ConnectionState.CONNECTED, Instant.now(), null, null),
+                    "dev-OFF", new DeviceState("dev-OFF", ConnectionState.DISCONNECTED, null, null, "endpoint timeout")
+            );
+            OpcUaHealthIndicator indicator = new OpcUaHealthIndicator(createMockService(states));
+            Health health = indicator.health();
+            assertThat(health.getStatus()).isEqualTo(Status.DOWN);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> devices = (Map<String, Object>) health.getDetails().get("devices");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> offDetails = (Map<String, Object>) devices.get("dev-OFF");
+            assertThat(offDetails).containsEntry("state", "DISCONNECTED");
+            assertThat(offDetails).containsEntry("message", "endpoint timeout");
         }
     }
 }

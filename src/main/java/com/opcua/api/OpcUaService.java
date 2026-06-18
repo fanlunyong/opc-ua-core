@@ -95,9 +95,21 @@ public class OpcUaService {
     }
 
     /**
-     * 关闭服务：依次关闭轮询、连接管理、分发引擎。
+     * 关闭服务。顺序：
+     * <ol>
+     *   <li>SubscriptionManager.removeAll —— 取消所有订阅，避免新回调送入正在关闭的引擎</li>
+     *   <li>ReadWriteHandler.shutdown —— 取消轮询并 awaitTermination</li>
+     *   <li>ConnectionManager.shutdown —— 断开 Milo 客户端</li>
+     *   <li>DataDispatchEngine.shutdown —— 最后关闭分发引擎，处理残留队列再退出</li>
+     * </ol>
+     * 此顺序避免关停期 Milo 通知线程将数据 dispatch 到已半关闭的引擎。
      */
     public void shutdown() {
+        try {
+            subscriptionManager.removeAll();
+        } catch (Exception e) {
+            logger.warn("SubscriptionManager.removeAll 关闭异常: {}", e.getMessage());
+        }
         readWriteHandler.shutdown();
         connectionManager.shutdown();
         dispatchEngine.shutdown();

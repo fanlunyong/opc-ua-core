@@ -53,7 +53,14 @@
 ## 9. 健康检查与监控
 
 - [x] 9.1 实现 `OpcUaHealthIndicator`：注册到 Spring Boot Actuator，检查所有设备连接状态
-- [x] 9.2 暴露连接指标：当前连接数、重连次数、最后连接时间
+- [ ] 9.2 暴露连接指标：当前连接数、重连次数、最后连接时间
+
+<!-- 9.1 实现说明：HealthIndicator 现已暴露 components.opcua.devices.{deviceId}.{state, message?, connectedSince?, lastDataReceived?}。
+     UP/DOWN 判定按 spec health-check 9.1 全部 CONNECTED 或无设备 → UP；任一非 CONNECTED → DOWN。
+     9.2 移回未完成：当前 ConnectionManager.aggregateState 未填充 connectedSince/lastDataReceived/reconnectCount，
+     需在 ConnectionManager + MiloClientWrapper 中增加状态变更追踪。范围扩展到连接管理层，
+     与 10.2-10.4 集成测试一同延期到独立的后续 change（保持本 change 范围聚焦）。 -->
+
 
 ## 10. 集成测试与验证
 

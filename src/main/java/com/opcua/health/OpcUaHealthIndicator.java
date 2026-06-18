@@ -6,6 +6,7 @@ import com.opcua.model.DeviceState;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -34,9 +35,28 @@ public class OpcUaHealthIndicator implements HealthIndicator {
                 ? Health.up()
                 : Health.down();
 
+        // 构建 per-device 详情：deviceId → { state, message }（spec health-check 9.1 要求）
+        Map<String, Object> deviceDetails = new LinkedHashMap<>();
+        for (Map.Entry<String, DeviceState> entry : states.entrySet()) {
+            DeviceState s = entry.getValue();
+            Map<String, Object> info = new LinkedHashMap<>();
+            info.put("state", s.getState() != null ? s.getState().name() : "UNKNOWN");
+            if (s.getMessage() != null) {
+                info.put("message", s.getMessage());
+            }
+            if (s.getConnectedSince() != null) {
+                info.put("connectedSince", s.getConnectedSince().toString());
+            }
+            if (s.getLastDataReceived() != null) {
+                info.put("lastDataReceived", s.getLastDataReceived().toString());
+            }
+            deviceDetails.put(entry.getKey(), info);
+        }
+
         return builder
                 .withDetail("totalDevices", total)
                 .withDetail("connectedDevices", (int) connected)
+                .withDetail("devices", deviceDetails)
                 .build();
     }
 }

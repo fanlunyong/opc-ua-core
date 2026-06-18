@@ -51,6 +51,9 @@ public class SubscriptionManager {
     /** deviceId → 该设备的所有 UaSubscription */
     private final ConcurrentHashMap<String, List<UaSubscription>> subscriptions = new ConcurrentHashMap<>();
 
+    /** deviceId → 创建订阅时使用的 OpcUaClient 引用，用于 removeSubscriptions 时调用 deleteSubscription */
+    private final ConcurrentHashMap<String, OpcUaClient> deviceClients = new ConcurrentHashMap<>();
+
     /**
      * 构造订阅管理器。
      *
@@ -153,18 +156,42 @@ public class SubscriptionManager {
         }
 
         subscriptions.put(deviceId, result);
+        deviceClients.put(deviceId, client);
         return result;
     }
 
     /**
-     * 移除某设备的所有订阅记录。
+     * 移除某设备的所有订阅记录，并在服务端删除对应订阅以释放 NotificationListener。
      *
      * @param deviceId 设备标识
      */
     public void removeSubscriptions(String deviceId) {
         List<UaSubscription> removed = subscriptions.remove(deviceId);
-        if (removed != null) {
-            logger.info("移除订阅记录: deviceId={}, 订阅数={}", deviceId, removed.size());
+        OpcUaClient client = deviceClients.remove(deviceId);
+        if (removed == null) {
+            return;
+        }
+        if (client != null) {
+            for (UaSubscription subscription : removed) {
+                try {
+                    client.getSubscriptionManager()
+                            .deleteSubscription(subscription.getSubscriptionId())
+                            .get();
+                } catch (Exception e) {
+                    logger.warn("订阅服务端删除失败（忽略）: deviceId={}, subId={}, error={}",
+                            deviceId, subscription.getSubscriptionId(), e.getMessage());
+                }
+            }
+        }
+        logger.info("移除订阅记录: deviceId={}, 订阅数={}", deviceId, removed.size());
+    }
+
+    /**
+     * 移除所有设备的订阅，并在服务端删除以确保关停时无悬挂回调。
+     */
+    public void removeAll() {
+        for (String deviceId : new ArrayList<>(subscriptions.keySet())) {
+            removeSubscriptions(deviceId);
         }
     }
 
@@ -189,25 +216,21 @@ public class SubscriptionManager {
     /**
      * 将 Milo DataValue 转换为 OpcUaDataPoint。
      *
+     * <p>复用 {@link QualityEvaluator} 与 {@link DataMapper} 的解析策略，
+     * 与 {@link ReadWriteHandler#buildDataPoint} 对齐：null StatusCode 视为 Uncertain。</p>
+     *
      * @param nodeConfig 节点配置
      * @param dataValue  Milo 数据值
      * @return 聚合数据点
      */
     static OpcUaDataPoint convertToDataPoint(NodeConfig nodeConfig, DataValue dataValue) {
         StatusCode statusCode = dataValue.getStatusCode();
+        Quality quality = QualityEvaluator.evaluate(statusCode);
 
-        // 质量评估
-        Quality quality;
-        if (statusCode.isGood()) {
-            quality = Quality.Good;
-        } else if (statusCode.isBad()) {
-            quality = Quality.Bad;
-        } else {
-            quality = Quality.Uncertain;
-        }
-
-        // 状态码十六进制字符串
-        String statusCodeHex = "0x" + Long.toHexString(statusCode.getValue());
+        // 状态码十六进制字符串（null 时为 null，与 ReadWriteHandler 对齐）
+        String statusCodeHex = statusCode != null
+                ? "0x" + Long.toHexString(statusCode.getValue())
+                : null;
 
         // 值提取
         Object value = null;
@@ -215,19 +238,9 @@ public class SubscriptionManager {
             value = dataValue.getValue().getValue();
         }
 
-        // 数据类型: 优先使用配置，否则从 Variant 推断
-        String dataType = nodeConfig.getDataType();
-        if (dataType == null || dataType.isEmpty()) {
-            if (value != null) {
-                dataType = value.getClass().getSimpleName();
-            }
-        }
-
-        // displayName: 优先使用配置，否则用 nodeId
-        String displayName = nodeConfig.getDisplayName();
-        if (displayName == null || displayName.isEmpty()) {
-            displayName = nodeConfig.getNodeId();
-        }
+        String displayName = DataMapper.resolveDisplayName(nodeConfig.getDisplayName(),
+                nodeConfig.getNodeId());
+        String dataType = DataMapper.resolveDataType(nodeConfig.getDataType(), value);
 
         // 时间戳
         Instant sourceTimestamp = null;
