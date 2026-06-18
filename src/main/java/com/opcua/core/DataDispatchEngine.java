@@ -106,6 +106,14 @@ public class DataDispatchEngine {
     }
 
     /**
+     * 移除已注册的监听器。
+     * @return 已移除返回 true；未注册返回 false
+     */
+    public boolean removeListener(OpcUaDataListener listener) {
+        return listeners.remove(listener);
+    }
+
+    /**
      * 停止所有 drain 线程。
      * 可重复调用，不抛异常。
      */
