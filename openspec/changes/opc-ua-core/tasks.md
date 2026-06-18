@@ -19,10 +19,14 @@
 
 ## 4. 数据采集 — 订阅
 
-- [ ] 4.1 实现 `SubscriptionManager`：根据配置创建 OPC UA Subscription，管理采样间隔
-- [ ] 4.2 实现订阅数据回调聚合：将 Milo 数据变更批次内的所有节点聚合为 `OpcUaDeviceData`（含 `source` + `data[]`）
-- [ ] 4.3 实现多订阅组管理：同一设备支持多个订阅组独立运行
-- [ ] 4.4 实现重连后订阅自动重建
+- [x] 4.1 实现 `SubscriptionManager`：根据配置创建 OPC UA Subscription，管理采样间隔
+- [x] 4.2 实现订阅数据回调聚合：将 Milo 数据变更批次内的所有节点聚合为 `OpcUaDeviceData`（含 `source` + `data[]`）
+- [x] 4.3 实现多订阅组管理：同一设备支持多个订阅组独立运行
+- [x] 4.4 实现重连后订阅自动重建
+
+<!-- Task 4 spec review (round 1) accepted minor deviations:
+     - MINOR #5: commit message of d774090 differs from plan text ("DataDispatchEngine and SubscriptionManager" vs "SubscriptionManager and bucket-based async dispatch engine"). Cosmetic; semantically equivalent. Accepted; will be resolved at squash time if applicable.
+     - MINOR #6: OpcUaDataListener interface created in Task 4 commit d774090 belongs to Task 6 / OpenSpec 8.1 by plan boundary. Signature matches Task 6 spec exactly (@FunctionalInterface void onDataReceived(OpcUaDeviceData)). Accepted; will be acknowledged at Task 6 review without re-creation. -->
 
 ## 5. 数据采集 — 轮询与写入
 
