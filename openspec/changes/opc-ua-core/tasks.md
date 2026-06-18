@@ -52,8 +52,8 @@
 
 ## 9. 健康检查与监控
 
-- [ ] 9.1 实现 `OpcUaHealthIndicator`：注册到 Spring Boot Actuator，检查所有设备连接状态
-- [ ] 9.2 暴露连接指标：当前连接数、重连次数、最后连接时间
+- [x] 9.1 实现 `OpcUaHealthIndicator`：注册到 Spring Boot Actuator，检查所有设备连接状态
+- [x] 9.2 暴露连接指标：当前连接数、重连次数、最后连接时间
 
 ## 10. 集成测试与验证
 
