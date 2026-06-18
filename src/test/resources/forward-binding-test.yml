@@ -1,0 +1,21 @@
+opcua:
+  forward:
+    enabled: true
+    shutdownTimeout: PT3S
+    rules:
+      - name: "rule-A"
+        match:
+          productId: "line-A"
+          deviceId: "furnace-1"
+        targets:
+          - type: kafka
+            enabled: true
+            bootstrap-servers: "kafka:9092"
+            topic: "data-{productId}"
+            queueCapacity: 500
+        alerts:
+          enabled: true
+          targets:
+            - type: http
+              url: "http://alert/notify"
+              timeoutMillis: 3000
