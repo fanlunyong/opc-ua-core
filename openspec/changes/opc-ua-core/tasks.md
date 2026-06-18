@@ -30,18 +30,18 @@
 
 ## 5. 数据采集 — 轮询与写入
 
-- [ ] 5.1 实现 `ReadWriteHandler`：按配置间隔定期轮询读取节点值，同设备轮询结果聚合为 `OpcUaDeviceData`
-- [ ] 5.2 实现写入控制：接收写入请求，校验数据类型，执行写入操作
-- [ ] 5.3 实现轮询异常容错：单节点失败不中断其他节点轮询
+- [x] 5.1 实现 `ReadWriteHandler`：按配置间隔定期轮询读取节点值，同设备轮询结果聚合为 `OpcUaDeviceData`
+- [x] 5.2 实现写入控制：接收写入请求，校验数据类型，执行写入操作
+- [x] 5.3 实现轮询异常容错：单节点失败不中断其他节点轮询
 
 ## 6. 数据质量标记
 
-- [ ] 6.1 实现 `QualityEvaluator`：解析 OPC UA StatusCode，判断 Good / Bad / Uncertain
-- [ ] 6.2 实现 `qualityCheck` 开关：开启时 Bad/Uncertain 触发 WARN 日志，关闭时仅标记
+- [x] 6.1 实现 `QualityEvaluator`：解析 OPC UA StatusCode，判断 Good / Bad / Uncertain
+- [x] 6.2 实现 `qualityCheck` 开关：开启时 Bad/Uncertain 触发 WARN 日志，关闭时仅标记
 
 ## 7. 数据映射与 JSON 输出
 
-- [ ] 7.1 实现 `DataMapper`：NodeId → displayName 映射，未配置时自动生成 displayName
+- [x] 7.1 实现 `DataMapper`：NodeId → displayName 映射，未配置时自动生成 displayName
 - [ ] 7.2 实现设备级 JSON 构建器：将 `OpcUaDeviceData` 序列化为包含 `timestamp`、`source`、`data[]` 的完整 JSON
 
 ## 8. DataListener 回调机制
