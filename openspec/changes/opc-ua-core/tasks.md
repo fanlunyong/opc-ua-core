@@ -69,13 +69,10 @@
 - [ ] 10.3 验证 100+ 设备配置下的连接池行为（压力测试）
 - [ ] 10.4 验证断线重连流程：模拟网络中断 → 重连 → 订阅恢复
 
-<!-- 10.1 covered by:
-     - QualityEvaluatorTest (4), DataMapperTest (7), DataDispatchEngineTest (13),
-     - SubscriptionManagerTest (12), ReadWriteHandlerTest (9),
-     - OpcUaServiceTest (10), OpcUaHealthIndicatorTest (4),
-     - OpcUaCoreAutoConfigurationTest (3), OpcUaDeviceDataJsonTest (2),
-     - plus pre-existing ConnectionManager/MiloClientWrapper tests.
-     Total: 132 tests passing.
-     10.2-10.4 deferred — require adding org.eclipse.milo:sdk-server
-     dependency and embedded server bootstrap; significant scope; recommended
-     for a separate change or follow-up session. -->
+<!-- 10.1 covered by 133 unit tests across 10 test classes (QualityEvaluator, DataMapper,
+     DataDispatchEngine, SubscriptionManager, ReadWriteHandler, OpcUaService,
+     OpcUaHealthIndicator, OpcUaCoreAutoConfiguration, OpcUaDeviceData JSON,
+     plus pre-existing ConnectionManager + MiloClientWrapper tests).
+
+     10.2 / 10.3 / 10.4 拆分到独立 follow-up change：openspec/changes/opc-ua-core-hardening/
+     (依据 code review 反馈，连同 9.2 + I3-I6 评审延期项一同处理；本 change 范围聚焦核心层完成)。 -->
