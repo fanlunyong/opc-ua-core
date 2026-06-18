@@ -3,7 +3,7 @@
 - Change: opc-ua-forward
 - Phase: design
 - Mode: compact
-- Context hash: 748bc305c9af5b4ddd55cac61c8133effbd12bd8e8d3c3b9bfe73e4913073c79
+- Context hash: 7393977c476bd09f7beb1140a2c16fbc4e264e0f432adb01d9095ce8f9eedfbf
 
 Generated-by: comet-handoff.sh
 
@@ -13,7 +13,7 @@ OpenSpec remains the canonical capability spec. This handoff is a deterministic,
 
 - Source: openspec/changes/opc-ua-forward/proposal.md
 - Lines: 1-34
-- SHA256: 45e4f4dfc38d02f4f5f6b8864b829b3f0eee2d59072d1f22b8e33a90ff17796d
+- SHA256: 2a2f61a31d15aa43e239d43c389f736c7abf9e70e74beeacd5a80f18a40c326f
 
 ```md
 ## Why
@@ -26,7 +26,7 @@ OPC UA 设备数据采集后需要流转到多种下游系统（消息队列、�
 - **NEW** 时序数据库写入：将 data[] 中每条记录按时间戳写入 InfluxDB（或 TimescaleDB），支持配置 measurement 映射
 - **NEW** MQTT 转发：将指定节点的数据实时推送到 MQTT broker 的指定 topic
 - **NEW** HTTP Webhook：数据变更触发 HTTP POST 回调配置的 URL
-- **NEW** 告警路由：基于 `quality` 字段，将 Bad/Uncertain 的数据推送到 Kafka 告警专用 topic
+- **NEW** 告警路由：基于 `quality` 字段，将 Bad/Uncertain 的数据推送到配置的告警目标（Kafka/MQTT/HTTP/InfluxDB 任一）
 - **NEW** 转发规则配置：YAML 配置驱动的转发路由规则，按产品/设备/节点粒度控制数据流向
 
 ## Capabilities
@@ -37,7 +37,7 @@ OPC UA 设备数据采集后需要流转到多种下游系统（消息队列、�
 - `tsdb-forward`: 时序数据库写入（InfluxDB）
 - `mqtt-forward`: MQTT 协议数据转发
 - `http-forward`: HTTP Webhook 回调
-- `alert-routing`: 基于数据质量的告警路由，Bad/Uncertain 数据推送到 Kafka 告警 topic
+- `alert-routing`: 基于数据质量的告警路由，Bad/Uncertain 数据推送到配置的告警目标（任意 sender 类型）
 - `forward-config`: 转发规则配置管理，支持按 productId/deviceId/节点粒度控制输出
 
 ### Modified Capabilities
@@ -148,108 +148,120 @@ Full source: openspec/changes/opc-ua-forward/design.md
 ## openspec/changes/opc-ua-forward/tasks.md
 
 - Source: openspec/changes/opc-ua-forward/tasks.md
-- Lines: 1-51
-- SHA256: be9013bce3f7db74e0dfe575dce2fd557e37ba7b2e91d6b9f39c3ab679745bdc
+- Lines: 1-59
+- SHA256: 142ef97b43ca9af69b78f9ee55e792666d84b6b309cc969a98dd6aa72fc858bb
 
 ```md
 ## 1. 转发模块骨架
 
 - [ ] 1.1 创建 `forward` 模块结构，添加依赖（Spring Kafka、InfluxDB Client、Eclipse Paho MQTT、Spring Web）
-- [ ] 1.2 实现 YAML 转发配置绑定类（`ForwardProperties`），解析 `forward.rules` 配置
-- [ ] 1.3 创建转发数据模型（`ForwardRule`、`ForwardTarget`、`MatchCondition`）
+- [ ] 1.2 实现 YAML 转发配置绑定类（`ForwardProperties`），解析 `forward.rules` 配置；支持 `forward.shutdownTimeout`（默认 PT5S）
+- [ ] 1.3 创建转发数据模型（`ForwardRule`、`ForwardTarget`、`MatchCondition`、`AlertConfig`）
+- [ ] 1.4 实现 Change 1 `OpcUaService.unregisterListener` API（cross-change patch；与本 change 同分支提交）
 
 ## 2. 转发引擎核心
 
-- [ ] 2.1 实现 `ForwardingEngine`：注册为 Change 1 的 `OpcUaDataListener`，接收 `OpcUaDeviceData`
-- [ ] 2.2 实现规则匹配器：根据 `MatchCondition`（productId/deviceId/nodeId）筛选匹配的规则
+- [ ] 2.1 实现 `ForwardingEngine`：`@PostConstruct` 注册为 Change 1 的 `OpcUaDataListener`，接收 `OpcUaDeviceData`；`@PreDestroy` 触发优雅关停；空 rules 跳过注册
+- [ ] 2.2 实现规则匹配器：根据 `MatchCondition`（productId/deviceId/nodeId）筛选匹配的规则；纯 CPU，禁 I/O
 - [ ] 2.3 实现 Sender 异步调度：独立线程池，队列解耦，drop-oldest 背压策略
+- [ ] 2.4 实现 Drop-oldest 计数聚合：`ConcurrentHashMap<deviceId, AtomicLong>` + 1s/100 条双触发 flush，按 (deviceId, senderId) 维度 WARN
+- [ ] 2.5 实现优雅关停流程：`unregisterListener` → `stopAccepting` → `awaitDrain(shutdownTimeout)` → 超时 WARN（含未发数）→ 强制 `close`
+- [ ] 2.6 实现 `SenderRegistry`：按连接指纹聚合共享 Producer/Client（Kafka by bootstrap+security、MQTT by brokerUrl+clientId、InfluxDB by url+org+token、HTTP type 单例）+ 引用计数
 
 ## 3. Kafka Sender
 
-- [ ] 3.1 实现 `KafkaSender`：Kafka Producer 初始化与连接管理（单例 + 参数缓存）
+- [ ] 3.1 实现 `KafkaSender`：通过 `SenderRegistry` 获取共享 KafkaProducer
 - [ ] 3.2 实现 topic 模板解析：`opcua-data-{productId}` → 运行时替换为实际值
-- [ ] 3.3 实现 `OpcUaDeviceData` JSON 序列化发送到 Kafka
+- [ ] 3.3 实现 `OpcUaDeviceData` JSON 序列化（复用 Change 1 的 ObjectMapper Bean）发送到 Kafka
 
 ## 4. InfluxDB Sender
 
-- [ ] 4.1 实现 `InfluxDBSender`：InfluxDB Client 初始化与连接管理
-- [ ] 4.2 实现 `OpcUaDataPoint` → InfluxDB Point 转换：measurement + tags + field + timestamp
+- [ ] 4.1 实现 `InfluxDBSender`：通过 `SenderRegistry` 获取共享 InfluxDB Client
+- [ ] 4.2 实现 `OpcUaDataPoint` → InfluxDB Point 转换：measurement=displayName，tags={productId, deviceId, nodeId, quality}，field=value，timestamp=sourceTimestamp
 - [ ] 4.3 实现 data[] 批量写入：一条 `WriteApi.writePoints()` 写入整个 data 数组
 
 ## 5. MQTT Sender
 
-- [ ] 5.1 实现 `MqttSender`：Eclipse Paho MQTT Client 初始化与连接
-- [ ] 5.2 实现 JSON 发布到配置的 MQTT topic
+- [ ] 5.1 实现 `MqttSender`：通过 `SenderRegistry` 获取共享 Eclipse Paho MQTT Client
+- [ ] 5.2 实现 JSON 发布到配置的 MQTT topic（支持 QoS 配置）
 
 ## 6. HTTP Sender
 
-- [ ] 6.1 实现 `HttpSender`：Spring RestTemplate / WebClient HTTP POST 发送
+- [ ] 6.1 实现 `HttpSender`：Spring RestTemplate HTTP POST 发送（type 单例）
 - [ ] 6.2 实现超时控制（默认 5s）与错误日志记录
 
 ## 7. 告警路由
 
 - [ ] 7.1 实现告警检测：遍历 data[] 中 quality 字段，识别 Bad/Uncertain
-- [ ] 7.2 实现告警推送：Bad/Uncertain → Kafka 告警 topic（`opcua-alert-{productId}`）
+- [ ] 7.2 实现告警推送：Bad/Uncertain → 复用 sender 抽象路由到 `alerts.targets` 的所有 sender 类型
 - [ ] 7.3 实现 `alerts.enabled` 开关控制
 
 ## 8. 配置管理
 
 - [ ] 8.1 实现 `${ENV_VAR}` 环境变量占位符替换（Kafka token、InfluxDB token 等）
 - [ ] 8.2 实现 Target `enabled` 开关：disabled 的 target 跳过初始化与发送
+- [ ] 8.3 实现 `@ConditionalOnProperty("opcua.forward.enabled", matchIfMissing=true)` 总开关与 `OpcUaForwardAutoConfiguration`
 
-## 9. 集成测试
+## 9. 测试
 
-- [ ] 9.1 编写 Kafka Sender 单元测试 + 嵌入式 Kafka 集成测试
-- [ ] 9.2 编写 InfluxDB Sender 集成测试（使用 InfluxDB 内存实例或 Testcontainers）
-- [ ] 9.3 编写告警路由逻辑测试：Good/Bad/Uncertain 分别验证
-- [ ] 9.4 编写端到端测试：模拟数据从 Change 1 DataListener → ForwardingEngine → Kafka/InfluxDB 全链路
+- [ ] 9.1 编写 Kafka Sender 单元测试：Mock `KafkaProducer.send`，验证 ProducerRecord 的 topic + key + JSON value
+- [ ] 9.2 编写 InfluxDB Sender 单元测试：Mock `WriteApi.writePoints`，验证 Point 的 measurement + tags + field + timestamp
+- [ ] 9.3 编写告警路由逻辑测试：Good/Bad/Uncertain 三种 case 分别验证主 + alerts.targets 路由
+- [ ] 9.4 编写端到端测试：构造 `OpcUaDeviceData` → `ForwardingEngine` → 验证 mock senders 收到正确 JSON 与路由
+- [ ] 9.5 编写 Drop-oldest 聚合测试：模拟队列溢出 → 验证 (deviceId, senderId) WARN 聚合 + 1s/100 条双触发
+- [ ] 9.6 编写优雅关停测试：mock SlowSender → 验证 5s 超时 + WARN 含未发数
+- [ ] 9.7 编写 `SenderRegistry` 共享测试：相同连接指纹 → 单实例；不同指纹 → 多实例；引用计数正确
 ```
 
 ## openspec/changes/opc-ua-forward/specs/alert-routing/spec.md
 
 - Source: openspec/changes/opc-ua-forward/specs/alert-routing/spec.md
-- Lines: 1-31
-- SHA256: c961ef4fed56f1aa6d7d8a050effa566388e3dcba63575039332b47cb8793014
+- Lines: 1-35
+- SHA256: 6da592e331c2d29b32fa0b40a39ded14d5ca93d0690b7bcb01e7ce63656f0e1f
 
 ```md
 ## ADDED Requirements
 
 ### Requirement: 告警路由
-系统 SHALL 基于 `data[].quality` 字段，将包含 Bad/Uncertain 质量标记的设备数据路由到 Kafka 告警 topic。
+系统 SHALL 基于 `data[].quality` 字段，将包含 Bad/Uncertain 质量标记的设备数据路由到配置的告警目标（任意 sender 类型）。
 
 #### Scenario: Bad 数据触发告警
 - **WHEN** data[] 中任意一条记录的 quality 为 "Bad"
-- **THEN** 系统将该完整 `OpcUaDeviceData` 同时推送到数据 topic 和告警 topic（`opcua-alert-{productId}`）
+- **THEN** 系统将该完整 `OpcUaDeviceData` 同时推送到主 targets 与所有 `alerts.targets`
 
 #### Scenario: Uncertain 数据触发告警
 - **WHEN** data[] 中任意一条记录的 quality 为 "Uncertain"
-- **THEN** 系统将该完整 `OpcUaDeviceData` 同时推送到数据 topic 和告警 topic
+- **THEN** 系统将该完整 `OpcUaDeviceData` 同时推送到主 targets 与所有 `alerts.targets`
 
 #### Scenario: Good 数据不触发告警
 - **WHEN** data[] 中所有记录的 quality 均为 "Good"
-- **THEN** 系统仅推送到数据 topic，不推送到告警 topic
+- **THEN** 系统仅推送到主 targets，不推送到 `alerts.targets`
 
 #### Scenario: 告警消息格式
 - **WHEN** 触发告警推送
-- **THEN** 告警 topic 中的消息格式与数据 topic 完全一致（同一 `OpcUaDeviceData` JSON），下游消费者通过 `data[].quality != "Good"` 定位异常点
+- **THEN** 告警目标接收的消息与主目标完全一致（同一 `OpcUaDeviceData` JSON），下游消费者通过 `data[].quality != "Good"` 定位异常点
+
+#### Scenario: 告警支持任意 sender 类型
+- **WHEN** `alerts.targets` 配置 `type: kafka`、`type: mqtt`、`type: http` 或 `type: influxdb`
+- **THEN** 系统使用相同的 sender 抽象将告警 payload 发送到对应下游
 
 ### Requirement: 告警开关
 系统 SHALL 支持按规则配置是否启用告警路由（`alerts.enabled`）。
 
 #### Scenario: 告警启用
 - **WHEN** 规则配置 `alerts.enabled: true`
-- **THEN** Bad/Uncertain 数据推送到告警 topic
+- **THEN** Bad/Uncertain 数据推送到 `alerts.targets`
 
 #### Scenario: 告警禁用
 - **WHEN** 规则配置 `alerts.enabled: false` 或未配置告警子段
-- **THEN** Bad/Uncertain 数据仅推送到数据 topic，不做告警推送
+- **THEN** Bad/Uncertain 数据仅推送到主 targets，不做告警推送
 ```
 
 ## openspec/changes/opc-ua-forward/specs/forward-config/spec.md
 
 - Source: openspec/changes/opc-ua-forward/specs/forward-config/spec.md
-- Lines: 1-27
-- SHA256: 6d3b2aed544e97421806fb9d4c6d3a11f47504d7427d979738947a51ed571e99
+- Lines: 1-53
+- SHA256: 8df2f7f7d614734022de5f2d5894daa8897d427d3d35bceabadb9e69ceadcb54
 
 ```md
 ## ADDED Requirements
@@ -279,6 +291,32 @@ Full source: openspec/changes/opc-ua-forward/design.md
 #### Scenario: 环境变量替换
 - **WHEN** 配置中包含 `${INFLUX_TOKEN}`
 - **THEN** 系统在加载配置时将其替换为实际环境变量值
+
+### Requirement: 优雅关停超时
+系统 SHALL 支持通过 `forward.shutdownTimeout` 配置应用关停时 sender 队列的最大 drain 等待时间。
+
+#### Scenario: 默认超时
+- **WHEN** 未配置 `forward.shutdownTimeout`
+- **THEN** 系统使用默认值 PT5S（5 秒）
+
+#### Scenario: 关停在超时内 drain 完成
+- **WHEN** Spring context 关闭且各 sender 在 shutdownTimeout 内 drain 完队列
+- **THEN** 系统正常关闭所有 sender 与共享连接，不丢失数据
+
+#### Scenario: 关停超时
+- **WHEN** Spring context 关闭且某 sender 在 shutdownTimeout 内仍未 drain 完
+- **THEN** 系统记录 WARN（含未发送消息数）后强制关闭，不阻塞 JVM 退出
+
+### Requirement: Sender 实例共享
+系统 SHALL 按连接参数指纹聚合 sender 的底层连接（KafkaProducer / MqttClient / InfluxDB Client），相同连接参数的多个 target 共享同一连接实例。
+
+#### Scenario: 同 broker 共享 KafkaProducer
+- **WHEN** 多条规则配置同一 `bootstrap-servers + securityProtocol` 但不同 topic
+- **THEN** 系统仅创建一个 KafkaProducer 实例，多 target 共用
+
+#### Scenario: 不同 broker 独立 KafkaProducer
+- **WHEN** 不同规则配置不同 `bootstrap-servers`
+- **THEN** 系统为每个独立指纹创建独立 KafkaProducer 实例
 ```
 
 ## openspec/changes/opc-ua-forward/specs/http-forward/spec.md

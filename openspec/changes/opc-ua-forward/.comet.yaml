@@ -1,5 +1,5 @@
 workflow: full
-phase: design
+phase: build
 context_compression: off
 build_mode: null
 build_pause: null
@@ -9,7 +9,7 @@ isolation: null
 verify_mode: null
 auto_transition: true
 base_ref: null
-design_doc: null
+design_doc: docs/superpowers/specs/2026-06-18-opc-ua-forward-design.md
 plan: null
 verify_result: pending
 verification_report: null
@@ -17,3 +17,5 @@ branch_status: pending
 created_at: 2026-06-17
 verified_at: null
 archived: false
+handoff_context: openspec/changes/opc-ua-forward/.comet/handoff/design-context.json
+handoff_hash: 7393977c476bd09f7beb1140a2c16fbc4e264e0f432adb01d9095ce8f9eedfbf
