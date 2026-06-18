@@ -2,6 +2,7 @@
 change: opc-ua-core
 design-doc: docs/superpowers/specs/2026-06-17-opc-ua-core-technical-design.md
 base-ref: ea5c42214f68e0b67fcc75e7bd705a3601cb8ed6
+archived-with: 2026-06-18-opc-ua-core
 ---
 
 # OPC UA 核心采集层 — 实施计划
@@ -12,6 +13,7 @@ base-ref: ea5c42214f68e0b67fcc75e7bd705a3601cb8ed6
 
 **技术栈:** Java 17, Spring Boot 3.2, Eclipse Milo 0.6.14, Maven, JUnit 5
 
+archived-with: 2026-06-18-opc-ua-core
 ---
 
 ## 文件结构
@@ -35,6 +37,7 @@ src/test/java/com/opcua/
 └── integration/  (MiloServerRunner, OpcUaIntegrationTest)
 ```
 
+archived-with: 2026-06-18-opc-ua-core
 ---
 
 ### Task 1: 项目骨架搭建
@@ -49,6 +52,7 @@ src/test/java/com/opcua/
 - [x] **Step 6:** 验证 `mvn compile -q` BUILD SUCCESS
 - [x] **Step 7:** 提交 `feat: add project skeleton with data models and YAML config binding`
 
+archived-with: 2026-06-18-opc-ua-core
 ---
 
 ### Task 2: MiloClientWrapper
@@ -59,6 +63,7 @@ src/test/java/com/opcua/
 - [x] **Step 2:** 验证 `mvn compile -q` BUILD SUCCESS
 - [x] **Step 3:** 提交 `feat: implement MiloClientWrapper with exponential backoff reconnect`
 
+archived-with: 2026-06-18-opc-ua-core
 ---
 
 ### Task 3: ConnectionManager
@@ -69,6 +74,7 @@ src/test/java/com/opcua/
 - [x] **Step 2:** 验证 `mvn compile -q` BUILD SUCCESS
 - [x] **Step 3:** 提交 `feat: implement ConnectionManager with bounded connection pool`
 
+archived-with: 2026-06-18-opc-ua-core
 ---
 
 ### Task 4: DataDispatchEngine + SubscriptionManager
@@ -80,6 +86,7 @@ src/test/java/com/opcua/
 - [x] **Step 3:** 验证 `mvn compile -q` BUILD SUCCESS
 - [x] **Step 4:** 提交 `feat: implement SubscriptionManager and bucket-based async dispatch engine`（实际 commit 信息为 `feat: implement DataDispatchEngine and SubscriptionManager`，语义等价；已被 round‑1 spec review 接受）
 
+archived-with: 2026-06-18-opc-ua-core
 ---
 
 ### Task 5: QualityEvaluator + DataMapper + ReadWriteHandler
@@ -92,6 +99,7 @@ src/test/java/com/opcua/
 - [x] **Step 4:** 验证 `mvn compile -q` BUILD SUCCESS
 - [x] **Step 5:** 提交 `feat: implement QualityEvaluator, DataMapper, and ReadWriteHandler`
 
+archived-with: 2026-06-18-opc-ua-core
 ---
 
 ### Task 6: OpcUaDataListener + OpcUaService
@@ -103,6 +111,7 @@ src/test/java/com/opcua/
 - [x] **Step 3:** 验证 `mvn compile -q` BUILD SUCCESS
 - [x] **Step 4:** 提交 `feat: implement OpcUaService unified API and DataListener interface`
 
+archived-with: 2026-06-18-opc-ua-core
 ---
 
 ### Task 7: 健康检查 + 自动配置
@@ -114,6 +123,7 @@ src/test/java/com/opcua/
 - [x] **Step 3:** 验证 `mvn compile -q` BUILD SUCCESS
 - [x] **Step 4:** 提交 `feat: implement health check indicator and auto-configuration`
 
+archived-with: 2026-06-18-opc-ua-core
 ---
 
 ### Task 8: 单元测试
@@ -126,6 +136,7 @@ src/test/java/com/opcua/
 - [x] **Step 4:** 运行 `mvn test` (~7 tests pass) — 实际 133/133 全部通过（覆盖范围超出原计划）
 - [x] **Step 5:** 提交 `test: add unit tests for QualityEvaluator, DataMapper, and DataDispatchEngine`（实际通过 Task 4-7 commits 中的 TDD 流程逐步落地，等价交付）
 
+archived-with: 2026-06-18-opc-ua-core
 ---
 
 ### Task 9: 集成测试 — MOVED to follow-up change `opc-ua-core-hardening`
@@ -141,6 +152,7 @@ src/test/java/com/opcua/
 ~~Step 3: 运行 `mvn test` (all pass)~~ → hardening §7.1
 ~~Step 4: 提交 `test: add integration tests with embedded Milo Example Server`~~ → hardening §2.1
 
+archived-with: 2026-06-18-opc-ua-core
 ---
 
 ### Task 10: 最终验证
