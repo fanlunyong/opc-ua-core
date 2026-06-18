@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 数据分桶异步分发引擎。
@@ -37,6 +38,7 @@ public class DataDispatchEngine {
     private final List<LinkedBlockingQueue<OpcUaDeviceData>> buckets;
     private final List<Thread> drainThreads;
     private final List<OpcUaDataListener> listeners;
+    private final AtomicLong droppedCount = new AtomicLong();
     private volatile boolean running;
 
     /**
@@ -83,7 +85,17 @@ public class DataDispatchEngine {
         // 队列满时丢弃最旧元素（drop-oldest）
         while (!queue.offer(data)) {
             queue.poll();
+            long total = droppedCount.incrementAndGet();
+            logger.warn("队列溢出丢弃最旧数据: deviceId={}, bucket={}, droppedTotal={}",
+                    deviceId, bucketIndex, total);
         }
+    }
+
+    /**
+     * 返回累计丢弃的消息数量（drop-oldest 触发次数）。
+     */
+    public long getDroppedCount() {
+        return droppedCount.get();
     }
 
     /**

@@ -30,7 +30,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -115,13 +117,25 @@ public class SubscriptionManager {
                             requests
                     ).get();
 
+                    // 建立 UaMonitoredItem → NodeConfig 映射，供批次回调反查节点配置
+                    Map<UaMonitoredItem, NodeConfig> itemToNode = new IdentityHashMap<>();
                     for (int i = 0; i < items.size(); i++) {
-                        UaMonitoredItem item = items.get(i);
-                        final NodeConfig nc = groupConfig.getNodes().get(i);
-                        item.setValueConsumer((java.util.function.Consumer<DataValue>) dataValue ->
-                                onDataReceived(deviceId, config.getProductId(),
-                                        config.getEndpointUrl(), nc, dataValue));
+                        itemToNode.put(items.get(i), groupConfig.getNodes().get(i));
                     }
+
+                    // 注册批次回调（每次 PublishResponse 内的所有 MonitoredItem 一次回调）
+                    final String productId = config.getProductId();
+                    final String endpointUrl = config.getEndpointUrl();
+                    subscription.addNotificationListener(new UaSubscription.NotificationListener() {
+                        @Override
+                        public void onDataChangeNotification(UaSubscription sub,
+                                                             List<UaMonitoredItem> monitoredItems,
+                                                             List<DataValue> dataValues,
+                                                             DateTime publishTime) {
+                            onBatchReceived(deviceId, productId, endpointUrl,
+                                    itemToNode, monitoredItems, dataValues);
+                        }
+                    });
                 }
 
                 result.add(subscription);
@@ -250,30 +264,41 @@ public class SubscriptionManager {
     // === 内部方法 ===
 
     /**
-     * 单个数据点到达时的回调处理。
-     * 将 DataValue 转换为 OpcUaDataPoint，封装为 OpcUaDeviceData，交由分发引擎处理。
+     * 批次回调：将一次 PublishResponse 中同设备所有节点变更聚合为单个 OpcUaDeviceData，
+     * 然后通过 dispatchEngine 一次性分发。
      */
-    private void onDataReceived(String deviceId, String productId, String endpointUrl,
-                                NodeConfig nodeConfig, DataValue dataValue) {
+    private void onBatchReceived(String deviceId, String productId, String endpointUrl,
+                                 Map<UaMonitoredItem, NodeConfig> itemToNode,
+                                 List<UaMonitoredItem> monitoredItems,
+                                 List<DataValue> dataValues) {
         try {
-            OpcUaDataPoint dataPoint = convertToDataPoint(nodeConfig, dataValue);
+            int n = Math.min(monitoredItems.size(), dataValues.size());
+            List<OpcUaDataPoint> dataPoints = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) {
+                NodeConfig nodeConfig = itemToNode.get(monitoredItems.get(i));
+                if (nodeConfig == null) {
+                    // 未识别的 MonitoredItem，跳过
+                    continue;
+                }
+                dataPoints.add(convertToDataPoint(nodeConfig, dataValues.get(i)));
+            }
+            if (dataPoints.isEmpty()) {
+                return;
+            }
 
             OpcUaDeviceData.SourceInfo sourceInfo = new OpcUaDeviceData.SourceInfo(
                     productId, deviceId, endpointUrl
             );
 
-            OpcUaDeviceData deviceData = new OpcUaDeviceData(
-                    dataPoint.getSourceTimestamp() != null
-                            ? dataPoint.getSourceTimestamp()
-                            : Instant.now(),
-                    sourceInfo,
-                    List.of(dataPoint)
-            );
+            // 时间戳取首个 dataPoint 的 sourceTimestamp，缺失时 fallback 当前
+            Instant timestamp = dataPoints.get(0).getSourceTimestamp() != null
+                    ? dataPoints.get(0).getSourceTimestamp()
+                    : Instant.now();
 
+            OpcUaDeviceData deviceData = new OpcUaDeviceData(timestamp, sourceInfo, dataPoints);
             dispatchEngine.dispatch(deviceData);
         } catch (Exception e) {
-            logger.error("数据回调处理异常: deviceId={}, nodeId={}, error={}",
-                    deviceId, nodeConfig.getNodeId(), e.getMessage());
+            logger.error("批次回调处理异常: deviceId={}, error={}", deviceId, e.getMessage());
         }
     }
 }

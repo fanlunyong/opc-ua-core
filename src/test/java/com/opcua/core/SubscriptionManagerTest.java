@@ -390,8 +390,8 @@ class SubscriptionManagerTest {
     class DataArrivalCallback {
 
         @Test
-        @DisplayName("数据到达时应构建 OpcUaDeviceData 并调用 dispatchEngine.dispatch")
-        void shouldBuildDeviceDataAndDispatch() throws Exception {
+        @DisplayName("批次内多节点应聚合为单个 OpcUaDeviceData 并 dispatch")
+        void shouldAggregateBatchAndDispatch() throws Exception {
             CountDownLatch latch = new CountDownLatch(1);
             AtomicReference<OpcUaDeviceData> receivedData = new AtomicReference<>();
 
@@ -401,6 +401,98 @@ class SubscriptionManagerTest {
             };
 
             // 重新创建带监听器的 dispatchEngine
+            dispatchEngine.shutdown();
+            dispatchEngine = new DataDispatchEngine(2, 50, List.of(listener));
+            manager = new SubscriptionManager(dispatchEngine);
+
+            // 配置两个节点
+            NodeConfig n1 = new NodeConfig();
+            n1.setNodeId("ns=2;s=Node1");
+            n1.setDisplayName("Node1");
+            NodeConfig n2 = new NodeConfig();
+            n2.setNodeId("ns=2;s=Node2");
+            n2.setDisplayName("Node2");
+
+            SubscriptionGroupConfig group = new SubscriptionGroupConfig();
+            group.setGroupName("group1");
+            group.setSamplingInterval(1000);
+            group.setNodes(List.of(n1, n2));
+            config.setSubscriptions(List.of(group));
+
+            UaSubscription mockSub = mock(UaSubscription.class);
+            UaMonitoredItem mockItem1 = mock(UaMonitoredItem.class);
+            UaMonitoredItem mockItem2 = mock(UaMonitoredItem.class);
+
+            when(mockSubMgr.createSubscription(anyDouble()))
+                    .thenReturn(CompletableFuture.completedFuture(mockSub));
+            when(mockSub.createMonitoredItems(any(), any()))
+                    .thenReturn(CompletableFuture.completedFuture(List.of(mockItem1, mockItem2)));
+
+            manager.createSubscriptions(mockWrapper, config);
+
+            // 捕获 NotificationListener（批次回调入口）
+            ArgumentCaptor<UaSubscription.NotificationListener> listenerCaptor =
+                    ArgumentCaptor.forClass(UaSubscription.NotificationListener.class);
+            verify(mockSub).addNotificationListener(listenerCaptor.capture());
+
+            UaSubscription.NotificationListener notifListener = listenerCaptor.getValue();
+
+            // 构造 2 个 DataValue
+            StatusCode goodCode = mock(StatusCode.class);
+            when(goodCode.isGood()).thenReturn(true);
+            when(goodCode.isBad()).thenReturn(false);
+            when(goodCode.getValue()).thenReturn(0L);
+
+            Variant v1 = mock(Variant.class);
+            when(v1.getValue()).thenReturn(1.0);
+            Variant v2 = mock(Variant.class);
+            when(v2.getValue()).thenReturn(2.0);
+
+            DataValue dv1 = mock(DataValue.class);
+            when(dv1.getStatusCode()).thenReturn(goodCode);
+            when(dv1.getValue()).thenReturn(v1);
+            Date now = new Date();
+            when(dv1.getSourceTime()).thenReturn(new DateTime(now));
+            when(dv1.getServerTime()).thenReturn(new DateTime(now));
+
+            DataValue dv2 = mock(DataValue.class);
+            when(dv2.getStatusCode()).thenReturn(goodCode);
+            when(dv2.getValue()).thenReturn(v2);
+            when(dv2.getSourceTime()).thenReturn(new DateTime(now));
+            when(dv2.getServerTime()).thenReturn(new DateTime(now));
+
+            // 触发批次回调
+            notifListener.onDataChangeNotification(
+                    mockSub,
+                    List.of(mockItem1, mockItem2),
+                    List.of(dv1, dv2),
+                    new DateTime(now));
+
+            // 验证批次聚合：单次 dispatch 包含两个节点的数据
+            assertThat(latch.await(2, TimeUnit.SECONDS)).isTrue();
+            OpcUaDeviceData deviceData = receivedData.get();
+            assertThat(deviceData).isNotNull();
+            assertThat(deviceData.getSource().getDeviceId()).isEqualTo(TestConstants.DEVICE_ID);
+            assertThat(deviceData.getSource().getProductId()).isEqualTo(TestConstants.PRODUCT_ID);
+            assertThat(deviceData.getData()).hasSize(2);
+
+            List<Object> values = deviceData.getData().stream()
+                    .map(OpcUaDataPoint::getValue)
+                    .toList();
+            assertThat(values).containsExactlyInAnyOrder(1.0, 2.0);
+        }
+
+        @Test
+        @DisplayName("单节点批次也应正确聚合（degenerate case）")
+        void shouldDispatchSingleNodeBatch() throws Exception {
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicReference<OpcUaDeviceData> receivedData = new AtomicReference<>();
+
+            OpcUaDataListener listener = data -> {
+                receivedData.set(data);
+                latch.countDown();
+            };
+
             dispatchEngine.shutdown();
             dispatchEngine = new DataDispatchEngine(2, 50, List.of(listener));
             manager = new SubscriptionManager(dispatchEngine);
@@ -419,14 +511,12 @@ class SubscriptionManagerTest {
 
             manager.createSubscriptions(mockWrapper, config);
 
-            // 获取注册的 valueConsumer
-            ArgumentCaptor<Consumer<DataValue>> consumerCaptor =
-                    ArgumentCaptor.forClass(Consumer.class);
-            verify(mockItem).setValueConsumer(consumerCaptor.capture());
+            ArgumentCaptor<UaSubscription.NotificationListener> listenerCaptor =
+                    ArgumentCaptor.forClass(UaSubscription.NotificationListener.class);
+            verify(mockSub).addNotificationListener(listenerCaptor.capture());
 
-            Consumer<DataValue> valueConsumer = consumerCaptor.getValue();
+            UaSubscription.NotificationListener notifListener = listenerCaptor.getValue();
 
-            // 构造 DataValue 并触发回调
             DataValue dataValue = mock(DataValue.class);
             StatusCode statusCode = mock(StatusCode.class);
             Variant variant = mock(Variant.class);
@@ -441,15 +531,16 @@ class SubscriptionManagerTest {
             when(dataValue.getSourceTime()).thenReturn(new DateTime(now));
             when(dataValue.getServerTime()).thenReturn(new DateTime(now));
 
-            // 触发回调
-            valueConsumer.accept(dataValue);
+            notifListener.onDataChangeNotification(
+                    mockSub,
+                    List.of(mockItem),
+                    List.of(dataValue),
+                    new DateTime(now));
 
-            // 验证数据被分发
             assertThat(latch.await(2, TimeUnit.SECONDS)).isTrue();
             OpcUaDeviceData deviceData = receivedData.get();
             assertThat(deviceData).isNotNull();
             assertThat(deviceData.getSource().getDeviceId()).isEqualTo(TestConstants.DEVICE_ID);
-            assertThat(deviceData.getSource().getProductId()).isEqualTo(TestConstants.PRODUCT_ID);
             assertThat(deviceData.getData()).hasSize(1);
             assertThat(deviceData.getData().get(0).getValue()).isEqualTo(123.45);
         }

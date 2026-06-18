@@ -18,6 +18,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -132,35 +133,57 @@ class DataDispatchEngineTest {
     class QueueOverflow {
 
         @Test
-        @DisplayName("队列满时应丢弃最旧的数据，保留最新")
+        @DisplayName("队列满时应丢弃最旧的数据，保留新数据（确定性验证）")
         void shouldDropOldestWhenQueueFull() throws Exception {
-            CountDownLatch latch = new CountDownLatch(2);
-            List<OpcUaDeviceData> received = new CopyOnWriteArrayList<>();
+            // 阻塞 listener 让 drain 线程在第一条数据上停住，使后续 dispatch 必然填满队列
+            CountDownLatch listenerStarted = new CountDownLatch(1);
+            CountDownLatch releaseLatch = new CountDownLatch(1);
+            List<String> receivedValues = new CopyOnWriteArrayList<>();
+            AtomicBoolean firstCall = new AtomicBoolean(true);
 
             OpcUaDataListener listener = data -> {
-                received.add(data);
-                latch.countDown();
+                String value = (String) data.getData().get(0).getValue();
+                if (firstCall.compareAndSet(true, false)) {
+                    receivedValues.add(value);
+                    listenerStarted.countDown();
+                    try {
+                        releaseLatch.await();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                } else {
+                    receivedValues.add(value);
+                }
             };
 
-            // queueCapacity=1: 只能放一个元素
             DataDispatchEngine engine = new DataDispatchEngine(
-                    1, 1, List.of(listener));
+                    1, 2, List.of(listener));
             try {
-                OpcUaDeviceData data1 = createDeviceData(TestConstants.DEVICE_ID, "first");
-                OpcUaDeviceData data2 = createDeviceData(TestConstants.DEVICE_ID, "second");
+                // d1 被 drain 线程取走并阻塞在 listener
+                engine.dispatch(createDeviceData(TestConstants.DEVICE_ID, "d1"));
+                assertThat(listenerStarted.await(2, TimeUnit.SECONDS)).isTrue();
 
-                engine.dispatch(data1);
-                // 短暂等待让 drain 线程开始处理
-                Thread.sleep(50);
-                engine.dispatch(data2);
+                // 队列填满到 capacity=2
+                engine.dispatch(createDeviceData(TestConstants.DEVICE_ID, "d2"));
+                engine.dispatch(createDeviceData(TestConstants.DEVICE_ID, "d3"));
 
-                assertThat(latch.await(2, TimeUnit.SECONDS)).isTrue();
+                // d4 溢出 → drop-oldest 应丢弃 d2，保留 d3 和 d4
+                engine.dispatch(createDeviceData(TestConstants.DEVICE_ID, "d4"));
 
-                // data1 可能被丢弃（如果队列满），data2 一定被收到
-                // 至少 data2 被收到
-                assertThat(received.stream()
-                        .anyMatch(d -> d == data2)).isTrue();
+                // 释放 listener，drain 线程依次处理 d1（已被取走）、d3、d4
+                releaseLatch.countDown();
+
+                // 等待剩余两条被处理
+                long deadline = System.currentTimeMillis() + 2000;
+                while (receivedValues.size() < 3 && System.currentTimeMillis() < deadline) {
+                    Thread.sleep(20);
+                }
+
+                assertThat(receivedValues).containsExactly("d1", "d3", "d4");
+                assertThat(receivedValues).doesNotContain("d2");
+                assertThat(engine.getDroppedCount()).isEqualTo(1L);
             } finally {
+                releaseLatch.countDown();
                 engine.shutdown();
             }
         }
@@ -190,6 +213,42 @@ class DataDispatchEngineTest {
                 assertThat(latch.await(3, TimeUnit.SECONDS)).isTrue();
                 assertThat(received).hasSize(3);
             } finally {
+                engine.shutdown();
+            }
+        }
+
+        @Test
+        @DisplayName("溢出时 droppedCount 应递增")
+        void shouldIncrementDroppedCountOnDrop() throws Exception {
+            CountDownLatch listenerStarted = new CountDownLatch(1);
+            CountDownLatch releaseLatch = new CountDownLatch(1);
+
+            OpcUaDataListener blockingListener = data -> {
+                listenerStarted.countDown();
+                try {
+                    releaseLatch.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            };
+
+            DataDispatchEngine engine = new DataDispatchEngine(
+                    1, 2, List.of(blockingListener));
+            try {
+                // d1 立即被 drain 线程取走并阻塞在 listener
+                engine.dispatch(createDeviceData(TestConstants.DEVICE_ID, "d1"));
+                assertThat(listenerStarted.await(2, TimeUnit.SECONDS)).isTrue();
+
+                // 队列填满（capacity=2）
+                engine.dispatch(createDeviceData(TestConstants.DEVICE_ID, "d2"));
+                engine.dispatch(createDeviceData(TestConstants.DEVICE_ID, "d3"));
+
+                // d4 溢出 → drop oldest (d2)
+                engine.dispatch(createDeviceData(TestConstants.DEVICE_ID, "d4"));
+
+                assertThat(engine.getDroppedCount()).isEqualTo(1L);
+            } finally {
+                releaseLatch.countDown();
                 engine.shutdown();
             }
         }
