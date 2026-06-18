@@ -57,7 +57,18 @@
 
 ## 10. 集成测试与验证
 
-- [ ] 10.1 编写单元测试：QualityEvaluator、DataMapper、连接池逻辑
+- [x] 10.1 编写单元测试：QualityEvaluator、DataMapper、连接池逻辑
 - [ ] 10.2 编写集成测试：使用 Eclipse Milo Example Server 作为模拟设备，验证全链路（连接→订阅→JSON 输出）
 - [ ] 10.3 验证 100+ 设备配置下的连接池行为（压力测试）
 - [ ] 10.4 验证断线重连流程：模拟网络中断 → 重连 → 订阅恢复
+
+<!-- 10.1 covered by:
+     - QualityEvaluatorTest (4), DataMapperTest (7), DataDispatchEngineTest (13),
+     - SubscriptionManagerTest (12), ReadWriteHandlerTest (9),
+     - OpcUaServiceTest (10), OpcUaHealthIndicatorTest (4),
+     - OpcUaCoreAutoConfigurationTest (3), OpcUaDeviceDataJsonTest (2),
+     - plus pre-existing ConnectionManager/MiloClientWrapper tests.
+     Total: 132 tests passing.
+     10.2-10.4 deferred — require adding org.eclipse.milo:sdk-server
+     dependency and embedded server bootstrap; significant scope; recommended
+     for a separate change or follow-up session. -->
