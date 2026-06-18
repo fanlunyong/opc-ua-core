@@ -8,7 +8,7 @@ OPC UA 设备数据采集后需要流转到多种下游系统（消息队列、�
 - **NEW** 时序数据库写入：将 data[] 中每条记录按时间戳写入 InfluxDB（或 TimescaleDB），支持配置 measurement 映射
 - **NEW** MQTT 转发：将指定节点的数据实时推送到 MQTT broker 的指定 topic
 - **NEW** HTTP Webhook：数据变更触发 HTTP POST 回调配置的 URL
-- **NEW** 告警路由：基于 `quality` 字段，将 Bad/Uncertain 的数据推送到 Kafka 告警专用 topic
+- **NEW** 告警路由：基于 `quality` 字段，将 Bad/Uncertain 的数据推送到配置的告警目标（Kafka/MQTT/HTTP/InfluxDB 任一）
 - **NEW** 转发规则配置：YAML 配置驱动的转发路由规则，按产品/设备/节点粒度控制数据流向
 
 ## Capabilities
@@ -19,7 +19,7 @@ OPC UA 设备数据采集后需要流转到多种下游系统（消息队列、�
 - `tsdb-forward`: 时序数据库写入（InfluxDB）
 - `mqtt-forward`: MQTT 协议数据转发
 - `http-forward`: HTTP Webhook 回调
-- `alert-routing`: 基于数据质量的告警路由，Bad/Uncertain 数据推送到 Kafka 告警 topic
+- `alert-routing`: 基于数据质量的告警路由，Bad/Uncertain 数据推送到配置的告警目标（任意 sender 类型）
 - `forward-config`: 转发规则配置管理，支持按 productId/deviceId/节点粒度控制输出
 
 ### Modified Capabilities
