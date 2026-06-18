@@ -348,6 +348,39 @@ opcua:
 
 无（D1-D7 已完成；告警去重保留为 Change 3 后续工作）
 
+## P0 数据质量过滤（Plan 阶段补充）
+
+> 在 plan 编写阶段识别 OPC UA `StatusCode` 风险后追加的决策，已落地到 Plan A/B/C。
+
+### 风险
+
+`SubscriptionManager.onBatchReceived` 把所有 OpcUaDataPoint（包括 `Quality.Bad` / `Uncertain`）一律分发到 ForwardingEngine。下游消费者拿到的 Bad 点 value 通常为 null 或停滞值，可能被误判为正常。OPC UA `StatusCode` 子状态信息（BadConnectionClosed、UncertainLastUsableValue 等）也容易在序列化中丢失。
+
+### 决策
+
+1. **新增 `QualityFilter` POJO** 与 `ForwardRule.qualityFilter` 字段（默认 `dropBadOnly`：丢 Bad、放行 Good 与 Uncertain）— Plan A Task 4
+2. **`QualityFilterApplier` 工具** — Plan C Task 3b：filter 全放行返回原对象（无 GC）；全部丢弃返回 null（调用方跳过 enqueue）；部分丢弃以 `(原 sourceInfo + 子集 dataPoints)` 重建
+3. **`ForwardingEngine.onDataReceived`** 在路由前应用 filter 到主 targets；**alert 通道豁免**（alert 用原始数据，保留 Bad/Uncertain 上下文供告警）— Plan C Task 3
+4. **Sender payload 必含字段**：`quality`、`statusCode`（hex）、`sourceTimestamp`、`serverTimestamp` — Plan B 顶部约定 + 每个 Sender 单测验证
+5. **InfluxDB 时间戳 fallback 链**：sourceTimestamp → serverTimestamp → batch timestamp → now；server 时间作为 `serverTimestampNs` field 保留 — Plan B Task 3 InfluxDBSender
+
+### 取舍
+
+| 决策 | 选择 | 备选 | 理由 |
+|------|------|------|------|
+| 默认过滤策略 | dropBadOnly | dropBoth / passAll | Bad 数据 value 不可信；Uncertain 仍有运维价值 |
+| 过滤位置 | ForwardingEngine 路由前 | SubscriptionManager 回调内 | 保持 SubscriptionManager 单一职责；ForwardingEngine 已是路由决策点 |
+| Alert 是否过滤 | 不过滤 | 与主通道一致 | 告警目的就是暴露 Bad/Uncertain |
+| StatusCode 表示 | hex 字符串透传 | 子状态枚举 | 当前 dropBadOnly 已覆盖 80% 场景；子状态枚举体积大，留待 hardening change |
+
+### 未覆盖（保留为新 change `opc-ua-quality-hardening`）
+
+- Stale Value 检测（设备级 watchdog）
+- `UaSubscription.NotificationListener.onStatusChanged` / `onKeepAlive` / `onPublishFailure` 回调
+- StatusCode 子状态枚举化与精细化过滤
+- Quality 指标暴露（Micrometer）
+- 时钟漂移检测（source vs server timestamp delta）
+
 ## Spec Patches
 
 本 change 实施时同步回写以下 OpenSpec delta：
