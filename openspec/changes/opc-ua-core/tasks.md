@@ -46,9 +46,9 @@
 
 ## 8. DataListener 回调机制
 
-- [ ] 8.1 定义 `OpcUaDataListener` 接口（`onDataReceived(OpcUaDeviceData)` — 设备级批量回调）
-- [ ] 8.2 实现 Listener 注册与多播：支持多个 Listener 同时消费同一 `OpcUaDeviceData` 数据流
-- [ ] 8.3 实现 `OpcUaService` — 统一对外 API 入口，组合 ConnectionManager + SubscriptionManager + ReadWriteHandler
+- [x] 8.1 定义 `OpcUaDataListener` 接口（`onDataReceived(OpcUaDeviceData)` — 设备级批量回调）
+- [x] 8.2 实现 Listener 注册与多播：支持多个 Listener 同时消费同一 `OpcUaDeviceData` 数据流
+- [x] 8.3 实现 `OpcUaService` — 统一对外 API 入口，组合 ConnectionManager + SubscriptionManager + ReadWriteHandler
 
 ## 9. 健康检查与监控
 

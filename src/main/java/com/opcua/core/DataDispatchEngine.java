@@ -99,6 +99,13 @@ public class DataDispatchEngine {
     }
 
     /**
+     * 动态注册监听器（构造之后追加）。
+     */
+    public void addListener(OpcUaDataListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
      * 停止所有 drain 线程。
      * 可重复调用，不抛异常。
      */

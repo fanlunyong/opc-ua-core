@@ -414,5 +414,29 @@ class DataDispatchEngineTest {
                 engine.shutdown();
             }
         }
+
+        @Test
+        @DisplayName("addListener 注册的监听器应在后续 dispatch 中收到数据")
+        void shouldDeliverToDynamicallyAddedListener() throws Exception {
+            CountDownLatch latch = new CountDownLatch(1);
+            AtomicReference<OpcUaDeviceData> received = new AtomicReference<>();
+
+            DataDispatchEngine engine = new DataDispatchEngine(1, 50, Collections.emptyList());
+            try {
+                OpcUaDataListener dynamicListener = data -> {
+                    received.set(data);
+                    latch.countDown();
+                };
+                engine.addListener(dynamicListener);
+
+                OpcUaDeviceData testData = createDeviceData(TestConstants.DEVICE_ID, "dynamic");
+                engine.dispatch(testData);
+
+                assertThat(latch.await(2, TimeUnit.SECONDS)).isTrue();
+                assertThat(received.get()).isSameAs(testData);
+            } finally {
+                engine.shutdown();
+            }
+        }
     }
 }
