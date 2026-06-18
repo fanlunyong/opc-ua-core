@@ -70,6 +70,14 @@ public class OpcUaService {
     }
 
     /**
+     * 注销数据监听器（与 registerListener 对称）。
+     * @return 已注销返回 true；未注册返回 false
+     */
+    public boolean unregisterListener(OpcUaDataListener listener) {
+        return dispatchEngine.removeListener(listener);
+    }
+
+    /**
      * 写入指定设备节点的值。
      */
     public WriteResult writeValue(String deviceId, String nodeId, Object value) {
