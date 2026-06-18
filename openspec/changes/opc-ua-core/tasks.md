@@ -42,7 +42,7 @@
 ## 7. 数据映射与 JSON 输出
 
 - [x] 7.1 实现 `DataMapper`：NodeId → displayName 映射，未配置时自动生成 displayName
-- [ ] 7.2 实现设备级 JSON 构建器：将 `OpcUaDeviceData` 序列化为包含 `timestamp`、`source`、`data[]` 的完整 JSON
+- [x] 7.2 实现设备级 JSON 构建器：将 `OpcUaDeviceData` 序列化为包含 `timestamp`、`source`、`data[]` 的完整 JSON
 
 ## 8. DataListener 回调机制
 
