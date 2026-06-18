@@ -293,7 +293,10 @@ public class SubscriptionManager {
                     // 未识别的 MonitoredItem，跳过
                     continue;
                 }
-                dataPoints.add(convertToDataPoint(nodeConfig, dataValues.get(i)));
+                OpcUaDataPoint dataPoint = convertToDataPoint(nodeConfig, dataValues.get(i));
+                QualityEvaluator.logIfNeeded(dataPoint.getQuality(), nodeConfig.isQualityCheck(),
+                        nodeConfig.getNodeId());
+                dataPoints.add(dataPoint);
             }
             if (dataPoints.isEmpty()) {
                 return;

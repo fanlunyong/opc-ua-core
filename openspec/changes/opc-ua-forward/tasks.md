@@ -3,8 +3,8 @@
 - [ ] 1.1 创建 `forward` 模块结构，添加依赖（Spring Kafka、InfluxDB Client、Eclipse Paho MQTT、Spring Web）
 - [ ] 1.2 实现 YAML 转发配置绑定类（`ForwardProperties`），解析 `forward.rules` 配置；支持 `forward.shutdownTimeout`（默认 PT5S）
 - [ ] 1.3 创建转发数据模型（`ForwardRule`、`ForwardTarget`、`MatchCondition`、`AlertConfig`）
-- [ ] 1.4 实现 Change 1 `OpcUaService.unregisterListener` API（cross-change patch；与本 change 同分支提交）
-- [ ] 1.5 在 `SubscriptionManager.onBatchReceived` 中调用 `QualityEvaluator.logIfNeeded(quality, qualityCheck, nodeId)` 接入 quality observability（对接 design.md「P0 数据质量过滤」决策；调用已存在的 `QualityEvaluator` 工具，不引入新过滤逻辑）
+- [x] 1.4 实现 Change 1 `OpcUaService.unregisterListener` API（cross-change patch；与本 change 同分支提交）
+- [x] 1.5 在 `SubscriptionManager.onBatchReceived` 中调用 `QualityEvaluator.logIfNeeded(quality, qualityCheck, nodeId)` 接入 quality observability（对接 design.md「P0 数据质量过滤」决策；调用已存在的 `QualityEvaluator` 工具，不引入新过滤逻辑）
 
 ## 2. 转发引擎核心
 
