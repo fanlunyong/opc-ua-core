@@ -8,11 +8,11 @@
 
 ## 2. 转发引擎核心
 
-- [ ] 2.1 实现 `ForwardingEngine`：`@PostConstruct` 注册为 Change 1 的 `OpcUaDataListener`，接收 `OpcUaDeviceData`；`@PreDestroy` 触发优雅关停；空 rules 跳过注册
-- [ ] 2.2 实现规则匹配器：根据 `MatchCondition`（productId/deviceId/nodeId）筛选匹配的规则；纯 CPU，禁 I/O
+- [x] 2.1 实现 `ForwardingEngine`：`@PostConstruct` 注册为 Change 1 的 `OpcUaDataListener`，接收 `OpcUaDeviceData`；`@PreDestroy` 触发优雅关停；空 rules 跳过注册
+- [x] 2.2 实现规则匹配器：根据 `MatchCondition`（productId/deviceId/nodeId）筛选匹配的规则；纯 CPU，禁 I/O
 - [x] 2.3 实现 Sender 异步调度：独立线程池，队列解耦，drop-oldest 背压策略
 - [x] 2.4 实现 Drop-oldest 计数聚合：`ConcurrentHashMap<deviceId, AtomicLong>` + 1s/100 条双触发 flush，按 (deviceId, senderId) 维度 WARN
-- [ ] 2.5 实现优雅关停流程：`unregisterListener` → `stopAccepting` → `awaitDrain(shutdownTimeout)` → 超时 WARN（含未发数）→ 强制 `close`
+- [x] 2.5 实现优雅关停流程：`unregisterListener` → `stopAccepting` → `awaitDrain(shutdownTimeout)` → 超时 WARN（含未发数）→ 强制 `close`
 - [x] 2.6 实现 `SenderRegistry`：按连接指纹聚合共享 Producer/Client（Kafka by bootstrap+security、MQTT by brokerUrl+clientId、InfluxDB by url+org+token、HTTP type 单例）+ 引用计数
 
 ## 3. Kafka Sender
@@ -39,22 +39,22 @@
 
 ## 7. 告警路由
 
-- [ ] 7.1 实现告警检测：遍历 data[] 中 quality 字段，识别 Bad/Uncertain
-- [ ] 7.2 实现告警推送：Bad/Uncertain → 复用 sender 抽象路由到 `alerts.targets` 的所有 sender 类型
-- [ ] 7.3 实现 `alerts.enabled` 开关控制
+- [x] 7.1 实现告警检测：遍历 data[] 中 quality 字段，识别 Bad/Uncertain
+- [x] 7.2 实现告警推送：Bad/Uncertain → 复用 sender 抽象路由到 `alerts.targets` 的所有 sender 类型
+- [x] 7.3 实现 `alerts.enabled` 开关控制
 
 ## 8. 配置管理
 
-- [ ] 8.1 实现 `${ENV_VAR}` 环境变量占位符替换（Kafka token、InfluxDB token 等）
-- [ ] 8.2 实现 Target `enabled` 开关：disabled 的 target 跳过初始化与发送
-- [ ] 8.3 实现 `@ConditionalOnProperty("opcua.forward.enabled", matchIfMissing=true)` 总开关与 `OpcUaForwardAutoConfiguration`
+- [x] 8.1 实现 `${ENV_VAR}` 环境变量占位符替换（Kafka token、InfluxDB token 等）
+- [x] 8.2 实现 Target `enabled` 开关：disabled 的 target 跳过初始化与发送
+- [x] 8.3 实现 `@ConditionalOnProperty("opcua.forward.enabled", matchIfMissing=true)` 总开关与 `OpcUaForwardAutoConfiguration`
 
 ## 9. 测试
 
 - [x] 9.1 编写 Kafka Sender 单元测试：Mock `KafkaProducer.send`，验证 ProducerRecord 的 topic + key + JSON value
 - [x] 9.2 编写 InfluxDB Sender 单元测试：Mock `WriteApi.writePoints`，验证 Point 的 measurement + tags + field + timestamp
-- [ ] 9.3 编写告警路由逻辑测试：Good/Bad/Uncertain 三种 case 分别验证主 + alerts.targets 路由
-- [ ] 9.4 编写端到端测试：构造 `OpcUaDeviceData` → `ForwardingEngine` → 验证 mock senders 收到正确 JSON 与路由
-- [ ] 9.5 编写 Drop-oldest 聚合测试：模拟队列溢出 → 验证 (deviceId, senderId) WARN 聚合 + 1s/100 条双触发
-- [ ] 9.6 编写优雅关停测试：mock SlowSender → 验证 5s 超时 + WARN 含未发数
-- [ ] 9.7 编写 `SenderRegistry` 共享测试：相同连接指纹 → 单实例；不同指纹 → 多实例；引用计数正确
+- [x] 9.3 编写告警路由逻辑测试：Good/Bad/Uncertain 三种 case 分别验证主 + alerts.targets 路由
+- [x] 9.4 编写端到端测试：构造 `OpcUaDeviceData` → `ForwardingEngine` → 验证 mock senders 收到正确 JSON 与路由
+- [x] 9.5 编写 Drop-oldest 聚合测试：模拟队列溢出 → 验证 (deviceId, senderId) WARN 聚合 + 1s/100 条双触发
+- [x] 9.6 编写优雅关停测试：mock SlowSender → 验证 5s 超时 + WARN 含未发数
+- [x] 9.7 编写 `SenderRegistry` 共享测试：相同连接指纹 → 单实例；不同指纹 → 多实例；引用计数正确
