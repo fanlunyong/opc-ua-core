@@ -11,7 +11,7 @@
 - [ ] 2.1 实现 `ForwardingEngine`：`@PostConstruct` 注册为 Change 1 的 `OpcUaDataListener`，接收 `OpcUaDeviceData`；`@PreDestroy` 触发优雅关停；空 rules 跳过注册
 - [ ] 2.2 实现规则匹配器：根据 `MatchCondition`（productId/deviceId/nodeId）筛选匹配的规则；纯 CPU，禁 I/O
 - [ ] 2.3 实现 Sender 异步调度：独立线程池，队列解耦，drop-oldest 背压策略
-- [ ] 2.4 实现 Drop-oldest 计数聚合：`ConcurrentHashMap<deviceId, AtomicLong>` + 1s/100 条双触发 flush，按 (deviceId, senderId) 维度 WARN
+- [x] 2.4 实现 Drop-oldest 计数聚合：`ConcurrentHashMap<deviceId, AtomicLong>` + 1s/100 条双触发 flush，按 (deviceId, senderId) 维度 WARN
 - [ ] 2.5 实现优雅关停流程：`unregisterListener` → `stopAccepting` → `awaitDrain(shutdownTimeout)` → 超时 WARN（含未发数）→ 强制 `close`
 - [ ] 2.6 实现 `SenderRegistry`：按连接指纹聚合共享 Producer/Client（Kafka by bootstrap+security、MQTT by brokerUrl+clientId、InfluxDB by url+org+token、HTTP type 单例）+ 引用计数
 
