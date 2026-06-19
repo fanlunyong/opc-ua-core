@@ -2,6 +2,8 @@
 comet_change: opc-ua-core
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-06-18-opc-ua-core
+status: final
 ---
 
 # OPC UA 核心采集层 — 技术设计

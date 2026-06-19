@@ -1,0 +1,2 @@
+com.opcua.config.OpcUaCoreAutoConfiguration
+com.opcua.forward.config.OpcUaForwardAutoConfiguration
