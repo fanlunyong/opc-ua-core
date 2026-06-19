@@ -11,6 +11,7 @@ import com.opcua.model.OpcUaDataPoint;
 import com.opcua.model.OpcUaDeviceData;
 import com.opcua.model.Quality;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -19,6 +20,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.*;
 
 class ForwardingEngineRoutingTest {
@@ -75,6 +77,116 @@ class ForwardingEngineRoutingTest {
 
         verify(registry, times(1)).getOrCreate(any());
         verify(s, times(1)).enqueue(any());
+    }
+
+    @Test
+    void onDataReceived_dropsBadDataPointsBeforeRoutingByDefault() {
+        SenderRegistry registry = mock(SenderRegistry.class);
+        Sender mockSender = mock(Sender.class);
+        when(registry.getOrCreate(any())).thenReturn(mockSender);
+
+        ForwardRule rule = new ForwardRule();
+        ForwardTarget t = kafka("k:9092", "t");
+        rule.setTargets(List.of(t));
+        // 默认 qualityFilter = dropBadOnly
+
+        ForwardProperties props = new ForwardProperties();
+        props.setRules(new ArrayList<>(List.of(rule)));
+
+        ForwardingEngine engine = new ForwardingEngine(
+                mock(OpcUaService.class), registry, props);
+
+        OpcUaDeviceData data = makeMixedQualityData(
+                Quality.Good, Quality.Bad, Quality.Good);
+
+        engine.onDataReceived(data);
+
+        ArgumentCaptor<OpcUaDeviceData> captor = ArgumentCaptor.forClass(OpcUaDeviceData.class);
+        verify(mockSender).enqueue(captor.capture());
+
+        OpcUaDeviceData enqueued = captor.getValue();
+        assertEquals(2, enqueued.getData().size(), "Bad point should be dropped");
+        assertTrue(enqueued.getData().stream()
+                .allMatch(p -> p.getQuality() == Quality.Good));
+    }
+
+    @Test
+    void onDataReceived_skipsEnqueueWhenAllDataPointsAreBad() {
+        SenderRegistry registry = mock(SenderRegistry.class);
+        Sender mockSender = mock(Sender.class);
+        when(registry.getOrCreate(any())).thenReturn(mockSender);
+
+        ForwardRule rule = new ForwardRule();
+        rule.setTargets(List.of(kafka("k:9092", "t")));
+
+        ForwardProperties props = new ForwardProperties();
+        props.setRules(new ArrayList<>(List.of(rule)));
+
+        ForwardingEngine engine = new ForwardingEngine(
+                mock(OpcUaService.class), registry, props);
+
+        OpcUaDeviceData allBad = makeMixedQualityData(Quality.Bad, Quality.Bad);
+
+        engine.onDataReceived(allBad);
+
+        verify(mockSender, never()).enqueue(any());
+    }
+
+    @Test
+    void onDataReceived_alertChannelReceivesOriginalDataIncludingBad() {
+        SenderRegistry registry = mock(SenderRegistry.class);
+        Sender mainSender = mock(Sender.class);
+        Sender alertSender = mock(Sender.class);
+
+        ForwardRule rule = new ForwardRule();
+        rule.setTargets(List.of(kafka("k:9092", "main")));
+        AlertConfig alerts = new AlertConfig();
+        alerts.setEnabled(true);
+        ForwardTarget alertT = new ForwardTarget();
+        alertT.setType("mqtt");
+        alertT.setBrokerUrl("tcp://b:1883");
+        alertT.setClientId("c1");
+        alertT.setTopic("alert");
+        alerts.setTargets(List.of(alertT));
+        rule.setAlerts(alerts);
+
+        when(registry.getOrCreate(argThat(t -> t != null && "kafka".equals(t.getType()))))
+                .thenReturn(mainSender);
+        when(registry.getOrCreate(argThat(t -> t != null && "mqtt".equals(t.getType()))))
+                .thenReturn(alertSender);
+
+        ForwardProperties props = new ForwardProperties();
+        props.setRules(new ArrayList<>(List.of(rule)));
+
+        ForwardingEngine engine = new ForwardingEngine(
+                mock(OpcUaService.class), registry, props);
+
+        OpcUaDeviceData data = makeMixedQualityData(Quality.Good, Quality.Bad);
+
+        engine.onDataReceived(data);
+
+        // 主通道：Bad 已过滤
+        ArgumentCaptor<OpcUaDeviceData> mainCap = ArgumentCaptor.forClass(OpcUaDeviceData.class);
+        verify(mainSender).enqueue(mainCap.capture());
+        assertEquals(1, mainCap.getValue().getData().size());
+
+        // 告警通道：原始数据，含 Bad
+        ArgumentCaptor<OpcUaDeviceData> alertCap = ArgumentCaptor.forClass(OpcUaDeviceData.class);
+        verify(alertSender).enqueue(alertCap.capture());
+        assertEquals(2, alertCap.getValue().getData().size());
+    }
+
+    private static OpcUaDeviceData makeMixedQualityData(Quality... qualities) {
+        OpcUaDataPoint[] arr = new OpcUaDataPoint[qualities.length];
+        for (int i = 0; i < qualities.length; i++) {
+            arr[i] = new OpcUaDataPoint("ns=2;s=N" + i, "name", 1, "Int32",
+                    qualities[i], true, qualities[i].name(),
+                    Instant.now(), Instant.now());
+        }
+        return new OpcUaDeviceData(
+                Instant.now(),
+                new OpcUaDeviceData.SourceInfo("p", "d", "opc.tcp://x"),
+                List.of(arr));
     }
 
     private static ForwardRule ruleWithProductId(String productId, ForwardTarget t) {
