@@ -2,6 +2,8 @@
 comet_change: opc-ua-forward
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-06-19-opc-ua-forward
+status: final
 ---
 
 # OPC UA 转发引擎技术设计（Change 2）

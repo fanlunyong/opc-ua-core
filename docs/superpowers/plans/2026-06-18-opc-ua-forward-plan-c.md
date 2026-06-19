@@ -2,6 +2,7 @@
 change: opc-ua-forward
 design-doc: docs/superpowers/specs/2026-06-18-opc-ua-forward-design.md
 base-ref: 8098f48e7b8d237a1df51c8c8550a8128195b3ab
+archived-with: 2026-06-19-opc-ua-forward
 ---
 
 # OPC UA Forward — Plan C：ForwardingEngine + AutoConfig + 端到端
@@ -18,6 +19,7 @@ base-ref: 8098f48e7b8d237a1df51c8c8550a8128195b3ab
 
 **完成后覆盖 tasks.md 条目：** 2.1（ForwardingEngine 注册）、2.2（规则匹配器）、2.5 剩余（engine 关停编排）、7.1、7.2、7.3（告警路由）、8.1、8.2、8.3（环境变量、enabled 开关、AutoConfiguration）、9.3、9.4、9.5、9.6、9.7（端到端 + 告警路由 + 关停 + 共享测试）。
 
+archived-with: 2026-06-19-opc-ua-forward
 ---
 
 ## 文件结构
@@ -30,6 +32,7 @@ base-ref: 8098f48e7b8d237a1df51c8c8550a8128195b3ab
 | `src/main/java/com/opcua/forward/config/OpcUaForwardAutoConfiguration.java` | Spring Boot AutoConfig |
 | `src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` | AutoConfig 注册 |
 
+archived-with: 2026-06-19-opc-ua-forward
 ---
 
 ## Task 1: RuleMatcher
@@ -176,6 +179,7 @@ git add src/main/java/com/opcua/forward/engine/RuleMatcher.java \
 git commit -m "feat(forward): add RuleMatcher for productId/deviceId/nodeId matching"
 ```
 
+archived-with: 2026-06-19-opc-ua-forward
 ---
 
 ## Task 2: AlertDetector
@@ -281,6 +285,7 @@ git add src/main/java/com/opcua/forward/engine/AlertDetector.java \
 git commit -m "feat(forward): add AlertDetector for Bad/Uncertain quality detection"
 ```
 
+archived-with: 2026-06-19-opc-ua-forward
 ---
 
 ## Task 3: ForwardingEngine（路由 + 告警 + 生命周期）
@@ -688,6 +693,7 @@ git add src/main/java/com/opcua/forward/engine/ForwardingEngine.java \
 git commit -m "feat(forward): add ForwardingEngine with rule routing + alert routing + lifecycle"
 ```
 
+archived-with: 2026-06-19-opc-ua-forward
 ---
 
 ## Task 3b: QualityFilterApplier（P0 数据质量过滤工具）
@@ -858,6 +864,7 @@ git commit -m "feat(forward): add QualityFilterApplier for P0 data quality filte
 - Defaults to dropBadOnly when filter is null"
 ```
 
+archived-with: 2026-06-19-opc-ua-forward
 ---
 
 ## Task 3c: ForwardingEngine.onDataReceived quality 过滤回归测试
@@ -971,6 +978,7 @@ git commit -m "test(forward): regression tests for QualityFilter routing behavio
 - Alert channel still receives original data (Bad context preserved)"
 ```
 
+archived-with: 2026-06-19-opc-ua-forward
 ---
 
 
@@ -1132,6 +1140,7 @@ git add src/main/java/com/opcua/forward/config/OpcUaForwardAutoConfiguration.jav
 git commit -m "feat(forward): add OpcUaForwardAutoConfiguration with conditional registration"
 ```
 
+archived-with: 2026-06-19-opc-ua-forward
 ---
 
 ## Task 5: 端到端 Mock 集成测试
@@ -1295,6 +1304,7 @@ git add src/test/java/com/opcua/forward/engine/ForwardingEngineEndToEndTest.java
 git commit -m "test(forward): add end-to-end mock-based routing + alert routing test"
 ```
 
+archived-with: 2026-06-19-opc-ua-forward
 ---
 
 ## Task 6: 优雅关停集成测试
@@ -1434,6 +1444,7 @@ git add src/test/java/com/opcua/forward/engine/ForwardingEngineShutdownIntegrati
 git commit -m "test(forward): verify graceful shutdown drain + timeout under load"
 ```
 
+archived-with: 2026-06-19-opc-ua-forward
 ---
 
 ## Task 7: Drop-Oldest 聚合集成测试（端到端）
@@ -1546,6 +1557,7 @@ git add src/test/java/com/opcua/forward/engine/ForwardingEngineDropOldestAggrega
 git commit -m "test(forward): verify (deviceId, senderId) drop-oldest aggregation end-to-end"
 ```
 
+archived-with: 2026-06-19-opc-ua-forward
 ---
 
 ## Task 8: SenderRegistry 共享端到端测试
@@ -1654,6 +1666,7 @@ git add src/test/java/com/opcua/forward/sender/SenderRegistryEndToEndSharingTest
 git commit -m "test(forward): verify SenderRegistry connection sharing via CompositeSenderFactory"
 ```
 
+archived-with: 2026-06-19-opc-ua-forward
 ---
 
 ## Task 9: tasks.md 全量勾选 + 验证报告草稿
@@ -1676,6 +1689,7 @@ git add openspec/changes/opc-ua-forward/tasks.md
 git commit -m "chore(forward): mark all opc-ua-forward tasks complete"
 ```
 
+archived-with: 2026-06-19-opc-ua-forward
 ---
 
 ## Plan C 完成检查
