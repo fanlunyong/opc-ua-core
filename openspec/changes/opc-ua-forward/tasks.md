@@ -10,32 +10,32 @@
 
 - [ ] 2.1 实现 `ForwardingEngine`：`@PostConstruct` 注册为 Change 1 的 `OpcUaDataListener`，接收 `OpcUaDeviceData`；`@PreDestroy` 触发优雅关停；空 rules 跳过注册
 - [ ] 2.2 实现规则匹配器：根据 `MatchCondition`（productId/deviceId/nodeId）筛选匹配的规则；纯 CPU，禁 I/O
-- [ ] 2.3 实现 Sender 异步调度：独立线程池，队列解耦，drop-oldest 背压策略
+- [x] 2.3 实现 Sender 异步调度：独立线程池，队列解耦，drop-oldest 背压策略
 - [x] 2.4 实现 Drop-oldest 计数聚合：`ConcurrentHashMap<deviceId, AtomicLong>` + 1s/100 条双触发 flush，按 (deviceId, senderId) 维度 WARN
 - [ ] 2.5 实现优雅关停流程：`unregisterListener` → `stopAccepting` → `awaitDrain(shutdownTimeout)` → 超时 WARN（含未发数）→ 强制 `close`
 - [x] 2.6 实现 `SenderRegistry`：按连接指纹聚合共享 Producer/Client（Kafka by bootstrap+security、MQTT by brokerUrl+clientId、InfluxDB by url+org+token、HTTP type 单例）+ 引用计数
 
 ## 3. Kafka Sender
 
-- [ ] 3.1 实现 `KafkaSender`：通过 `SenderRegistry` 获取共享 KafkaProducer
-- [ ] 3.2 实现 topic 模板解析：`opcua-data-{productId}` → 运行时替换为实际值
-- [ ] 3.3 实现 `OpcUaDeviceData` JSON 序列化（复用 Change 1 的 ObjectMapper Bean）发送到 Kafka
+- [x] 3.1 实现 `KafkaSender`：通过 `SenderRegistry` 获取共享 KafkaProducer
+- [x] 3.2 实现 topic 模板解析：`opcua-data-{productId}` → 运行时替换为实际值
+- [x] 3.3 实现 `OpcUaDeviceData` JSON 序列化（复用 Change 1 的 ObjectMapper Bean）发送到 Kafka
 
 ## 4. InfluxDB Sender
 
-- [ ] 4.1 实现 `InfluxDBSender`：通过 `SenderRegistry` 获取共享 InfluxDB Client
-- [ ] 4.2 实现 `OpcUaDataPoint` → InfluxDB Point 转换：measurement=displayName，tags={productId, deviceId, nodeId, quality}，field=value，timestamp=sourceTimestamp
-- [ ] 4.3 实现 data[] 批量写入：一条 `WriteApi.writePoints()` 写入整个 data 数组
+- [x] 4.1 实现 `InfluxDBSender`：通过 `SenderRegistry` 获取共享 InfluxDB Client
+- [x] 4.2 实现 `OpcUaDataPoint` → InfluxDB Point 转换：measurement=displayName，tags={productId, deviceId, nodeId, quality}，field=value，timestamp=sourceTimestamp
+- [x] 4.3 实现 data[] 批量写入：一条 `WriteApi.writePoints()` 写入整个 data 数组
 
 ## 5. MQTT Sender
 
-- [ ] 5.1 实现 `MqttSender`：通过 `SenderRegistry` 获取共享 Eclipse Paho MQTT Client
-- [ ] 5.2 实现 JSON 发布到配置的 MQTT topic（支持 QoS 配置）
+- [x] 5.1 实现 `MqttSender`：通过 `SenderRegistry` 获取共享 Eclipse Paho MQTT Client
+- [x] 5.2 实现 JSON 发布到配置的 MQTT topic（支持 QoS 配置）
 
 ## 6. HTTP Sender
 
-- [ ] 6.1 实现 `HttpSender`：Spring RestTemplate HTTP POST 发送（type 单例）
-- [ ] 6.2 实现超时控制（默认 5s）与错误日志记录
+- [x] 6.1 实现 `HttpSender`：Spring RestTemplate HTTP POST 发送（type 单例）
+- [x] 6.2 实现超时控制（默认 5s）与错误日志记录
 
 ## 7. 告警路由
 
@@ -51,8 +51,8 @@
 
 ## 9. 测试
 
-- [ ] 9.1 编写 Kafka Sender 单元测试：Mock `KafkaProducer.send`，验证 ProducerRecord 的 topic + key + JSON value
-- [ ] 9.2 编写 InfluxDB Sender 单元测试：Mock `WriteApi.writePoints`，验证 Point 的 measurement + tags + field + timestamp
+- [x] 9.1 编写 Kafka Sender 单元测试：Mock `KafkaProducer.send`，验证 ProducerRecord 的 topic + key + JSON value
+- [x] 9.2 编写 InfluxDB Sender 单元测试：Mock `WriteApi.writePoints`，验证 Point 的 measurement + tags + field + timestamp
 - [ ] 9.3 编写告警路由逻辑测试：Good/Bad/Uncertain 三种 case 分别验证主 + alerts.targets 路由
 - [ ] 9.4 编写端到端测试：构造 `OpcUaDeviceData` → `ForwardingEngine` → 验证 mock senders 收到正确 JSON 与路由
 - [ ] 9.5 编写 Drop-oldest 聚合测试：模拟队列溢出 → 验证 (deviceId, senderId) WARN 聚合 + 1s/100 条双触发
