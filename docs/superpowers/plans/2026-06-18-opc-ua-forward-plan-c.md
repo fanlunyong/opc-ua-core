@@ -40,7 +40,7 @@ base-ref: 8098f48e7b8d237a1df51c8c8550a8128195b3ab
 - Create: `src/main/java/com/opcua/forward/engine/RuleMatcher.java`
 - Test: `src/test/java/com/opcua/forward/engine/RuleMatcherTest.java`
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 ```java
 package com.opcua.forward.engine;
@@ -117,12 +117,12 @@ class RuleMatcherTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试 — 确认编译失败**
+- [x] **Step 2: 运行测试 — 确认编译失败**
 
 Run: `mvn -q test -Dtest=RuleMatcherTest`
 Expected: 编译失败
 
-- [ ] **Step 3: 实现 RuleMatcher**
+- [x] **Step 3: 实现 RuleMatcher**
 
 ```java
 package com.opcua.forward.engine;
@@ -163,12 +163,12 @@ public final class RuleMatcher {
 }
 ```
 
-- [ ] **Step 4: 运行测试 — 确认通过**
+- [x] **Step 4: 运行测试 — 确认通过**
 
 Run: `mvn -q test -Dtest=RuleMatcherTest`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/main/java/com/opcua/forward/engine/RuleMatcher.java \
@@ -184,7 +184,7 @@ git commit -m "feat(forward): add RuleMatcher for productId/deviceId/nodeId matc
 - Create: `src/main/java/com/opcua/forward/engine/AlertDetector.java`
 - Test: `src/test/java/com/opcua/forward/engine/AlertDetectorTest.java`
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 ```java
 package com.opcua.forward.engine;
@@ -239,12 +239,12 @@ class AlertDetectorTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试 — 确认编译失败**
+- [x] **Step 2: 运行测试 — 确认编译失败**
 
 Run: `mvn -q test -Dtest=AlertDetectorTest`
 Expected: 编译失败
 
-- [ ] **Step 3: 实现 AlertDetector**
+- [x] **Step 3: 实现 AlertDetector**
 
 ```java
 package com.opcua.forward.engine;
@@ -268,12 +268,12 @@ public final class AlertDetector {
 }
 ```
 
-- [ ] **Step 4: 运行测试 — 确认通过**
+- [x] **Step 4: 运行测试 — 确认通过**
 
 Run: `mvn -q test -Dtest=AlertDetectorTest`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/main/java/com/opcua/forward/engine/AlertDetector.java \
@@ -291,7 +291,7 @@ git commit -m "feat(forward): add AlertDetector for Bad/Uncertain quality detect
 - Test: `src/test/java/com/opcua/forward/engine/ForwardingEngineAlertRoutingTest.java`
 - Test: `src/test/java/com/opcua/forward/engine/ForwardingEngineLifecycleTest.java`
 
-- [ ] **Step 1: 写主路由失败测试**
+- [x] **Step 1: 写主路由失败测试**
 
 ```java
 package com.opcua.forward.engine;
@@ -400,12 +400,12 @@ class ForwardingEngineRoutingTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试 — 确认编译失败**
+- [x] **Step 2: 运行测试 — 确认编译失败**
 
 Run: `mvn -q test -Dtest=ForwardingEngineRoutingTest`
 Expected: 编译失败
 
-- [ ] **Step 3: 实现 ForwardingEngine**
+- [x] **Step 3: 实现 ForwardingEngine**
 
 ```java
 package com.opcua.forward.engine;
@@ -507,12 +507,12 @@ public class ForwardingEngine implements OpcUaDataListener {
 }
 ```
 
-- [ ] **Step 4: 运行测试 — 确认通过**
+- [x] **Step 4: 运行测试 — 确认通过**
 
 Run: `mvn -q test -Dtest=ForwardingEngineRoutingTest`
 Expected: PASS
 
-- [ ] **Step 5: 写告警路由测试**
+- [x] **Step 5: 写告警路由测试**
 
 ```java
 package com.opcua.forward.engine;
@@ -600,12 +600,12 @@ class ForwardingEngineAlertRoutingTest {
 }
 ```
 
-- [ ] **Step 6: 运行测试 — 确认通过（无需修改实现）**
+- [x] **Step 6: 运行测试 — 确认通过（无需修改实现）**
 
 Run: `mvn -q test -Dtest=ForwardingEngineAlertRoutingTest`
 Expected: PASS（4 个测试）
 
-- [ ] **Step 7: 写生命周期测试**
+- [x] **Step 7: 写生命周期测试**
 
 ```java
 package com.opcua.forward.engine;
@@ -673,12 +673,12 @@ class ForwardingEngineLifecycleTest {
 }
 ```
 
-- [ ] **Step 8: 运行测试 — 确认通过**
+- [x] **Step 8: 运行测试 — 确认通过**
 
 Run: `mvn -q test -Dtest=ForwardingEngineLifecycleTest`
 Expected: PASS
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add src/main/java/com/opcua/forward/engine/ForwardingEngine.java \
@@ -699,7 +699,7 @@ git commit -m "feat(forward): add ForwardingEngine with rule routing + alert rou
 > **说明**：Task 3 ForwardingEngine.onDataReceived 已经引用 `QualityFilterApplier.apply(data, qualityFilter)`。本 task 提供具体实现。
 > 实施时如发现 OpcUaDeviceData 不支持 「以原 sourceInfo + 过滤后 dataPoints 重建」的构造方法，先在 `com.opcua.model.OpcUaDeviceData` 加最小补丁（同包工厂方法）；这属于跨 change 微调，commit 时在 message 中标注。
 
-- [ ] **Step 1: 写失败测试**
+- [x] **Step 1: 写失败测试**
 
 ```java
 // src/test/java/com/opcua/forward/engine/QualityFilterApplierTest.java
@@ -784,12 +784,12 @@ class QualityFilterApplierTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试验证失败**
+- [x] **Step 2: 运行测试验证失败**
 
 Run: `mvn -q test -Dtest=QualityFilterApplierTest`
 Expected: 编译失败 — QualityFilterApplier 未定义
 
-- [ ] **Step 3: 实现**
+- [x] **Step 3: 实现**
 
 ```java
 // src/main/java/com/opcua/forward/engine/QualityFilterApplier.java
@@ -840,12 +840,12 @@ public final class QualityFilterApplier {
 }
 ```
 
-- [ ] **Step 4: 运行测试验证通过**
+- [x] **Step 4: 运行测试验证通过**
 
 Run: `mvn -q test -Dtest=QualityFilterApplierTest`
 Expected: 4/4 PASS
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/main/java/com/opcua/forward/engine/QualityFilterApplier.java \
@@ -865,7 +865,7 @@ git commit -m "feat(forward): add QualityFilterApplier for P0 data quality filte
 **Files:**
 - Modify: `src/test/java/com/opcua/forward/engine/ForwardingEngineRoutingTest.java`（追加 2 个测试用例）
 
-- [ ] **Step 1: 追加测试**
+- [x] **Step 1: 追加测试**
 
 ```java
 // 在 ForwardingEngineRoutingTest 类中追加：
@@ -955,12 +955,12 @@ void onDataReceived_alertChannelReceivesOriginalDataIncludingBad() {
 
 > **辅助方法**：`makeMixedQualityData(Quality...)` 构造对应数量的 OpcUaDataPoint；`target(type)` 创建 enabled=true 的 ForwardTarget。如已存在类似 helper 复用即可。
 
-- [ ] **Step 2: 运行测试验证通过**
+- [x] **Step 2: 运行测试验证通过**
 
 Run: `mvn -q test -Dtest=ForwardingEngineRoutingTest`
 Expected: 全部新老测试 PASS
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/test/java/com/opcua/forward/engine/ForwardingEngineRoutingTest.java
@@ -988,7 +988,7 @@ git commit -m "test(forward): regression tests for QualityFilter routing behavio
 
 注：Plan A 阶段已新建过 `META-INF/spring/.../AutoConfiguration.imports`（opc-ua-core 自配置已注册）。本 Task 检查文件是否存在并追加 forward 自配置。
 
-- [ ] **Step 1: 写 AutoConfig 测试**
+- [x] **Step 1: 写 AutoConfig 测试**
 
 ```java
 package com.opcua.forward.config;
@@ -1040,12 +1040,12 @@ class OpcUaForwardAutoConfigurationTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试 — 确认编译失败**
+- [x] **Step 2: 运行测试 — 确认编译失败**
 
 Run: `mvn -q test -Dtest=OpcUaForwardAutoConfigurationTest`
 Expected: 编译失败
 
-- [ ] **Step 3: 实现 AutoConfiguration**
+- [x] **Step 3: 实现 AutoConfiguration**
 
 ```java
 package com.opcua.forward.config;
@@ -1107,7 +1107,7 @@ public class OpcUaForwardAutoConfiguration {
 }
 ```
 
-- [ ] **Step 4: 注册 AutoConfig**
+- [x] **Step 4: 注册 AutoConfig**
 
 检查 `src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` 是否存在。若存在，追加新行；若不存在，创建并写入：
 
@@ -1118,12 +1118,12 @@ com.opcua.forward.config.OpcUaForwardAutoConfiguration
 
 注：opc-ua-core 已存在的 `OpcUaCoreAutoConfiguration` 行必须保留。
 
-- [ ] **Step 5: 运行测试 — 确认通过**
+- [x] **Step 5: 运行测试 — 确认通过**
 
 Run: `mvn -q test -Dtest=OpcUaForwardAutoConfigurationTest`
 Expected: PASS
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/main/java/com/opcua/forward/config/OpcUaForwardAutoConfiguration.java \
@@ -1141,7 +1141,7 @@ git commit -m "feat(forward): add OpcUaForwardAutoConfiguration with conditional
 **Files:**
 - Test: `src/test/java/com/opcua/forward/engine/ForwardingEngineEndToEndTest.java`
 
-- [ ] **Step 1: 写端到端测试**
+- [x] **Step 1: 写端到端测试**
 
 ```java
 package com.opcua.forward.engine;
@@ -1283,12 +1283,12 @@ class ForwardingEngineEndToEndTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试 — 确认通过**
+- [x] **Step 2: 运行测试 — 确认通过**
 
 Run: `mvn -q test -Dtest=ForwardingEngineEndToEndTest`
 Expected: PASS
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/test/java/com/opcua/forward/engine/ForwardingEngineEndToEndTest.java
@@ -1304,7 +1304,7 @@ git commit -m "test(forward): add end-to-end mock-based routing + alert routing 
 **Files:**
 - Test: `src/test/java/com/opcua/forward/engine/ForwardingEngineShutdownIntegrationTest.java`
 
-- [ ] **Step 1: 写测试**
+- [x] **Step 1: 写测试**
 
 ```java
 package com.opcua.forward.engine;
@@ -1422,12 +1422,12 @@ class ForwardingEngineShutdownIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试 — 确认通过**
+- [x] **Step 2: 运行测试 — 确认通过**
 
 Run: `mvn -q test -Dtest=ForwardingEngineShutdownIntegrationTest`
 Expected: PASS
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/test/java/com/opcua/forward/engine/ForwardingEngineShutdownIntegrationTest.java
@@ -1443,7 +1443,7 @@ Plan A 已在 AbstractSenderDropOldestTest 用 stall sender 验证；此处补 F
 **Files:**
 - Test: `src/test/java/com/opcua/forward/engine/ForwardingEngineDropOldestAggregationTest.java`
 
-- [ ] **Step 1: 写测试 — engine 入口高速 enqueue → 验证 (deviceId, senderId) 计数**
+- [x] **Step 1: 写测试 — engine 入口高速 enqueue → 验证 (deviceId, senderId) 计数**
 
 ```java
 package com.opcua.forward.engine;
@@ -1534,12 +1534,12 @@ class ForwardingEngineDropOldestAggregationTest {
 
 注：测试用 package-private 访问 `getDropCount`（已在 Plan A Task 8 中定义为包级可见）。如包路径不同，需调整可见性或将测试移到 `com.opcua.forward.sender` 包下。
 
-- [ ] **Step 2: 运行测试 — 确认通过**
+- [x] **Step 2: 运行测试 — 确认通过**
 
 Run: `mvn -q test -Dtest=ForwardingEngineDropOldestAggregationTest`
 Expected: PASS
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/test/java/com/opcua/forward/engine/ForwardingEngineDropOldestAggregationTest.java
@@ -1555,7 +1555,7 @@ Plan A 用 stub factory 验证；此处用 `CompositeSenderFactory` + 4 类 mock
 **Files:**
 - Test: `src/test/java/com/opcua/forward/sender/SenderRegistryEndToEndSharingTest.java`
 
-- [ ] **Step 1: 写测试**
+- [x] **Step 1: 写测试**
 
 ```java
 package com.opcua.forward.sender;
@@ -1637,17 +1637,17 @@ class SenderRegistryEndToEndSharingTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试 — 确认通过**
+- [x] **Step 2: 运行测试 — 确认通过**
 
 Run: `mvn -q test -Dtest=SenderRegistryEndToEndSharingTest`
 Expected: PASS
 
-- [ ] **Step 3: 完整测试套件回归**
+- [x] **Step 3: 完整测试套件回归**
 
 Run: `mvn -q test`
 Expected: BUILD SUCCESS — 全 Plan A/B/C 测试通过
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/test/java/com/opcua/forward/sender/SenderRegistryEndToEndSharingTest.java
@@ -1660,16 +1660,16 @@ git commit -m "test(forward): verify SenderRegistry connection sharing via Compo
 
 完成所有 Plan A/B/C 任务后，回到 `openspec/changes/opc-ua-forward/tasks.md`，将所有条目改为 `[x]`。
 
-- [ ] **Step 1: 编辑 tasks.md，勾选所有 30 个子任务**
+- [x] **Step 1: 编辑 tasks.md，勾选所有 30 个子任务**
 
 逐项检查 Plan A/B/C 的 "完成后覆盖 tasks.md 条目" 列表，确认每条都已实现且测试通过，然后将对应 `[ ]` 改为 `[x]`。
 
-- [ ] **Step 2: 运行完整构建 + 测试**
+- [x] **Step 2: 运行完整构建 + 测试**
 
 Run: `mvn -q clean verify`
 Expected: BUILD SUCCESS
 
-- [ ] **Step 3: Commit tasks.md 更新**
+- [x] **Step 3: Commit tasks.md 更新**
 
 ```bash
 git add openspec/changes/opc-ua-forward/tasks.md
@@ -1680,8 +1680,8 @@ git commit -m "chore(forward): mark all opc-ua-forward tasks complete"
 
 ## Plan C 完成检查
 
-- [ ] `mvn -q clean verify` 全部通过
-- [ ] tasks.md 中以下条目可勾选（Plan C 直接负责的部分）：
+- [x] `mvn -q clean verify` 全部通过
+- [x] tasks.md 中以下条目可勾选（Plan C 直接负责的部分）：
   - 2.1（ForwardingEngine 注册 OpcUaDataListener）
   - 2.2（规则匹配器）
   - 2.5 剩余（engine 关停编排）
@@ -1696,7 +1696,7 @@ git commit -m "chore(forward): mark all opc-ua-forward tasks complete"
   - 9.5（drop-oldest 聚合 端到端）
   - 9.6（优雅关停 端到端）
   - 9.7（SenderRegistry 共享 端到端）
-- [ ] Task 9 完成后整个 tasks.md 全部 `[x]`
+- [x] Task 9 完成后整个 tasks.md 全部 `[x]`
 
 ## Self-Review
 
