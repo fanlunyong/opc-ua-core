@@ -21,9 +21,36 @@ public class ConfigService {
     private final List<ConfigChangeListener> listeners = new CopyOnWriteArrayList<>();
 
     private com.opcua.core.ConnectionManager connectionManager;
+    private ConfigPersistenceService persistenceService;
 
     public void setConnectionManager(com.opcua.core.ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
+    }
+
+    public void setPersistenceService(ConfigPersistenceService persistenceService) {
+        this.persistenceService = persistenceService;
+    }
+
+    /**
+     * 从持久化文件恢复配置（启动时调用）。
+     */
+    public void loadFromPersistence() {
+        if (persistenceService == null) return;
+        List<DeviceConfig> savedDevices = persistenceService.loadDevices();
+        List<ForwardRule> savedRules = persistenceService.loadRules();
+        for (DeviceConfig dc : savedDevices) {
+            devices.put(dc.getDeviceId(), dc);
+        }
+        for (ForwardRule rule : savedRules) {
+            rules.put(rule.getName(), rule);
+        }
+        logger.info("Loaded {} devices and {} rules from persistence", savedDevices.size(), savedRules.size());
+    }
+
+    private void persistIfEnabled() {
+        if (persistenceService != null) {
+            persistenceService.saveAll(getAllDevices(), getAllRules());
+        }
     }
 
     public void registerListener(ConfigChangeListener listener) {
@@ -37,6 +64,7 @@ public class ConfigService {
         }
         devices.put(id, config);
         fireEvent(new ConfigChangeEvent(ConfigChangeEvent.ChangeType.DEVICE_ADDED, id, config));
+        persistIfEnabled();
         logger.info("Device added: {}", id);
     }
 
@@ -46,6 +74,7 @@ public class ConfigService {
             throw new IllegalArgumentException("Device not found: " + deviceId);
         }
         fireEvent(new ConfigChangeEvent(ConfigChangeEvent.ChangeType.DEVICE_REMOVED, deviceId, removed));
+        persistIfEnabled();
         logger.info("Device removed: {}", deviceId);
     }
 
@@ -55,6 +84,7 @@ public class ConfigService {
         }
         devices.put(deviceId, config);
         fireEvent(new ConfigChangeEvent(ConfigChangeEvent.ChangeType.DEVICE_UPDATED, deviceId, config));
+        persistIfEnabled();
         logger.info("Device updated: {}", deviceId);
     }
 
@@ -79,6 +109,7 @@ public class ConfigService {
         }
         rules.put(name, rule);
         fireEvent(new ConfigChangeEvent(ConfigChangeEvent.ChangeType.RULE_ADDED, name, rule));
+        persistIfEnabled();
         logger.info("Rule added: {}", name);
     }
 
@@ -88,6 +119,7 @@ public class ConfigService {
             throw new IllegalArgumentException("Rule not found: " + name);
         }
         fireEvent(new ConfigChangeEvent(ConfigChangeEvent.ChangeType.RULE_REMOVED, name, removed));
+        persistIfEnabled();
         logger.info("Rule removed: {}", name);
     }
 
@@ -97,6 +129,7 @@ public class ConfigService {
         }
         rules.put(name, rule);
         fireEvent(new ConfigChangeEvent(ConfigChangeEvent.ChangeType.RULE_UPDATED, name, rule));
+        persistIfEnabled();
         logger.info("Rule updated: {}", name);
     }
 
@@ -111,6 +144,7 @@ public class ConfigService {
             }
         }
         fireEvent(new ConfigChangeEvent(ConfigChangeEvent.ChangeType.RULE_TOGGLED, name, rule));
+        persistIfEnabled();
         logger.info("Rule toggled: {} enabled={}", name, enabled);
     }
 
