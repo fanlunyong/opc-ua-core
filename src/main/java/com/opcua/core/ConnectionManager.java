@@ -143,6 +143,30 @@ public class ConnectionManager {
     }
 
     /**
+     * 更新设备配置（先移除旧连接，再创建新连接）。
+     *
+     * @param deviceId 设备标识
+     * @param newConfig 新配置
+     * @return 新的 DeviceHandle
+     */
+    public DeviceHandle updateDevice(String deviceId, DeviceConfig newConfig) {
+        logger.info("更新设备: deviceId={}", deviceId);
+
+        // 先移除旧设备
+        removeDevice(deviceId);
+
+        // 再添加新设备
+        return addDevice(newConfig);
+    }
+
+    /**
+     * 获取当前已注册设备数量。
+     */
+    public int getDeviceCount() {
+        return devices.size();
+    }
+
+    /**
      * 获取设备的一个连接（轮询负载均衡）。
      *
      * @param deviceId 设备标识
