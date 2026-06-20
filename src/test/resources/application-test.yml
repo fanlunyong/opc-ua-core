@@ -1,0 +1,14 @@
+# src/test/resources/application-test.yml
+opcua:
+  enabled: true
+  dispatch:
+    thread-pool-size: 2
+    bucket-count: 4
+    queue-capacity: 64
+  devices: []
+
+opcua.forward.enabled: false
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
