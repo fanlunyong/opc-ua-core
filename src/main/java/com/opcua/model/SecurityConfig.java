@@ -37,6 +37,7 @@ public class SecurityConfig {
      *
      * @return true 如果启用了安全认证
      */
+    @JsonIgnore
     public boolean isSecure() {
         return (certificatePath != null && !certificatePath.isBlank())
                 || (username != null && !username.isBlank());
