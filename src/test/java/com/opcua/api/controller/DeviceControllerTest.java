@@ -49,12 +49,14 @@ class DeviceControllerTest {
         dto.setEndpointUrl("opc.tcp://localhost:4840");
         dto.setNodes(List.of(new DeviceConfigDTO.NodeDTO("ns=2;s=Temp", "Temperature", "Double")));
 
-        // POST
+        // POST — 返回体应包含设备信息
         String postResp = mockMvc.perform(post("/api/devices")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.code").value(201))
+                .andExpect(jsonPath("$.data.id").value("device-1"))
+                .andExpect(jsonPath("$.data.endpointUrl").value("opc.tcp://localhost:4840"))
                 .andReturn().getResponse().getContentAsString();
 
         ApiResponse<?> parsed = objectMapper.readValue(postResp, ApiResponse.class);
@@ -144,7 +146,9 @@ class DeviceControllerTest {
         mockMvc.perform(put("/api/devices/device-update")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.id").value("device-update"))
+                .andExpect(jsonPath("$.data.name").value("New Name"));
 
         mockMvc.perform(get("/api/devices/device-update"))
                 .andExpect(status().isOk())

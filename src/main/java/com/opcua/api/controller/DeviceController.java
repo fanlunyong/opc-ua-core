@@ -42,7 +42,7 @@ public class DeviceController {
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Void>> add(@RequestBody DeviceConfigDTO dto) {
+    public ResponseEntity<ApiResponse<DeviceConfigDTO>> add(@RequestBody DeviceConfigDTO dto) {
         if (dto.getId() == null || dto.getId().isBlank()) {
             return ResponseEntity.badRequest()
                     .body(ApiResponse.error(400, "id is required"));
@@ -53,12 +53,14 @@ public class DeviceController {
         }
         DeviceConfig config = DeviceConfigDTO.toDeviceConfig(dto);
         configService.addDevice(config);
+        DeviceState state = configService.getDeviceState(dto.getId());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.of(201, "created", null));
+                .body(ApiResponse.of(201, "created",
+                        DeviceConfigDTO.fromDeviceConfig(config, state)));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> update(@PathVariable String id,
+    public ResponseEntity<ApiResponse<DeviceConfigDTO>> update(@PathVariable String id,
                                                      @RequestBody DeviceConfigDTO dto) {
         if (configService.getDevice(id) == null) {
             return ResponseEntity.status(404)
@@ -67,7 +69,9 @@ public class DeviceController {
         dto.setId(id);
         DeviceConfig config = DeviceConfigDTO.toDeviceConfig(dto);
         configService.updateDevice(id, config);
-        return ResponseEntity.ok(ApiResponse.success(null));
+        DeviceState state = configService.getDeviceState(id);
+        return ResponseEntity.ok(ApiResponse.success(
+                DeviceConfigDTO.fromDeviceConfig(config, state)));
     }
 
     @DeleteMapping("/{id}")
