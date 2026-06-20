@@ -5,3 +5,6 @@ opcua:
     bucket-count: 8
     queue-capacity: 1024
   devices: []
+  config-management:
+    enabled: true
+    persistence-path: config/opcua-runtime.yml
