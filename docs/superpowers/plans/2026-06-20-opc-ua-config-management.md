@@ -73,7 +73,7 @@ base-ref: 5cfefe60a726fdab8460931bcc401fb63a74ff40
 - Create: `src/main/java/com/opcua/api/dto/ApiResponse.java`
 - Create: `src/test/java/com/opcua/api/dto/ApiResponseTest.java`
 
-- [ ] **Step 1: 编写 ApiResponse 单元测试**
+- [x] **Step 1: 编写 ApiResponse 单元测试**
 
 ```java
 package com.opcua.api.dto;
@@ -112,7 +112,7 @@ class ApiResponseTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试验证失败**
+- [x] **Step 2: 运行测试验证失败**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.api.dto.ApiResponseTest" -DfailIfNoTests=false
@@ -120,7 +120,7 @@ mvn test -pl . -Dtest="com.opcua.api.dto.ApiResponseTest" -DfailIfNoTests=false
 
 预期：编译失败（ApiResponse 类不存在）
 
-- [ ] **Step 3: 实现 ApiResponse**
+- [x] **Step 3: 实现 ApiResponse**
 
 ```java
 package com.opcua.api.dto;
@@ -167,7 +167,7 @@ public class ApiResponse<T> {
 }
 ```
 
-- [ ] **Step 4: 运行测试验证通过**
+- [x] **Step 4: 运行测试验证通过**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.api.dto.ApiResponseTest"
@@ -175,7 +175,7 @@ mvn test -pl . -Dtest="com.opcua.api.dto.ApiResponseTest"
 
 预期：PASS
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add src/main/java/com/opcua/api/dto/ApiResponse.java src/test/java/com/opcua/api/dto/ApiResponseTest.java
@@ -192,7 +192,7 @@ git commit -m "feat: add ApiResponse unified response format"
 - Create: `src/test/java/com/opcua/api/dto/DeviceConfigDTOTest.java`
 - Create: `src/test/java/com/opcua/api/dto/ForwardRuleDTOTest.java`
 
-- [ ] **Step 1: 编写 DeviceConfigDTO 转换测试**
+- [x] **Step 1: 编写 DeviceConfigDTO 转换测试**
 
 ```java
 package com.opcua.api.dto;
@@ -272,7 +272,7 @@ class DeviceConfigDTOTest {
 }
 ```
 
-- [ ] **Step 2: 编写 ForwardRuleDTO 转换测试**
+- [x] **Step 2: 编写 ForwardRuleDTO 转换测试**
 
 ```java
 package com.opcua.api.dto;
@@ -347,7 +347,7 @@ class ForwardRuleDTOTest {
 }
 ```
 
-- [ ] **Step 3: 运行测试验证失败**
+- [x] **Step 3: 运行测试验证失败**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.api.dto.DeviceConfigDTOTest,com.opcua.api.dto.ForwardRuleDTOTest"
@@ -355,7 +355,7 @@ mvn test -pl . -Dtest="com.opcua.api.dto.DeviceConfigDTOTest,com.opcua.api.dto.F
 
 预期：编译失败（DTO 类不存在）
 
-- [ ] **Step 4: 实现 DeviceConfigDTO**
+- [x] **Step 4: 实现 DeviceConfigDTO**
 
 ```java
 package com.opcua.api.dto;
@@ -473,7 +473,7 @@ public class DeviceConfigDTO {
 }
 ```
 
-- [ ] **Step 5: 实现 ForwardRuleDTO**
+- [x] **Step 5: 实现 ForwardRuleDTO**
 
 ```java
 package com.opcua.api.dto;
@@ -577,7 +577,7 @@ public class ForwardRuleDTO {
 }
 ```
 
-- [ ] **Step 6: 运行测试验证通过**
+- [x] **Step 6: 运行测试验证通过**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.api.dto.DeviceConfigDTOTest,com.opcua.api.dto.ForwardRuleDTOTest"
@@ -585,7 +585,7 @@ mvn test -pl . -Dtest="com.opcua.api.dto.DeviceConfigDTOTest,com.opcua.api.dto.F
 
 预期：PASS
 
-- [ ] **Step 7: 提交**
+- [x] **Step 7: 提交**
 
 ```bash
 git add src/main/java/com/opcua/api/dto/DeviceConfigDTO.java src/main/java/com/opcua/api/dto/ForwardRuleDTO.java src/test/java/com/opcua/api/dto/DeviceConfigDTOTest.java src/test/java/com/opcua/api/dto/ForwardRuleDTOTest.java
@@ -599,7 +599,7 @@ git commit -m "feat: add DeviceConfigDTO and ForwardRuleDTO with model conversio
 **文件：**
 - Create: `src/main/java/com/opcua/config/GlobalExceptionHandler.java`
 
-- [ ] **Step 1: 实现 GlobalExceptionHandler**
+- [x] **Step 1: 实现 GlobalExceptionHandler**
 
 ```java
 package com.opcua.config;
@@ -650,7 +650,7 @@ public class GlobalExceptionHandler {
 }
 ```
 
-- [ ] **Step 2: 提交**
+- [x] **Step 2: 提交**
 
 ```bash
 git add src/main/java/com/opcua/config/GlobalExceptionHandler.java
@@ -666,7 +666,7 @@ git commit -m "feat: add GlobalExceptionHandler for REST API error handling"
 - Create: `src/test/java/com/opcua/api/controller/DeviceControllerTest.java`
 - Create: `src/test/resources/application-test.yml`
 
-- [ ] **Step 1: 创建测试环境配置**
+- [x] **Step 1: 创建测试环境配置**
 
 ```yaml
 # src/test/resources/application-test.yml
@@ -685,7 +685,7 @@ spring:
     allow-bean-definition-overriding: true
 ```
 
-- [ ] **Step 2: 编写 DeviceController 集成测试**
+- [x] **Step 2: 编写 DeviceController 集成测试**
 
 ```java
 package com.opcua.api.controller;
@@ -844,7 +844,7 @@ class DeviceControllerTest {
 }
 ```
 
-- [ ] **Step 3: 运行测试验证失败**
+- [x] **Step 3: 运行测试验证失败**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.api.controller.DeviceControllerTest" -Dspring.profiles.active=test
@@ -852,7 +852,7 @@ mvn test -pl . -Dtest="com.opcua.api.controller.DeviceControllerTest" -Dspring.p
 
 预期：编译失败（DeviceController、ConfigService 不存在）
 
-- [ ] **Step 4: 实现 ConfigService（最小骨架）**
+- [x] **Step 4: 实现 ConfigService（最小骨架）**
 
 ```java
 package com.opcua.config;
@@ -929,7 +929,7 @@ public class ConfigService {
 }
 ```
 
-- [ ] **Step 5: 实现 DeviceController**
+- [x] **Step 5: 实现 DeviceController**
 
 ```java
 package com.opcua.api.controller;
@@ -1016,7 +1016,7 @@ public class DeviceController {
 }
 ```
 
-- [ ] **Step 6: 运行测试验证通过**
+- [x] **Step 6: 运行测试验证通过**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.api.controller.DeviceControllerTest" -Dspring.profiles.active=test
@@ -1024,7 +1024,7 @@ mvn test -pl . -Dtest="com.opcua.api.controller.DeviceControllerTest" -Dspring.p
 
 预期：PASS（6 tests）
 
-- [ ] **Step 7: 提交**
+- [x] **Step 7: 提交**
 
 ```bash
 git add src/main/java/com/opcua/config/ConfigService.java src/main/java/com/opcua/config/ConfigChangeEvent.java src/main/java/com/opcua/config/ConfigChangeListener.java src/main/java/com/opcua/api/controller/DeviceController.java src/test/java/com/opcua/api/controller/DeviceControllerTest.java src/test/resources/application-test.yml
@@ -1040,7 +1040,7 @@ git commit -m "feat: add DeviceController with CRUD endpoints and ConfigService 
 - Create: `src/main/java/com/opcua/config/ConfigChangeListener.java`
 - Create: `src/test/java/com/opcua/config/ConfigChangeEventTest.java`
 
-- [ ] **Step 1: 编写 ConfigChangeEvent 测试**
+- [x] **Step 1: 编写 ConfigChangeEvent 测试**
 
 ```java
 package com.opcua.config;
@@ -1071,7 +1071,7 @@ class ConfigChangeEventTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试验证失败**
+- [x] **Step 2: 运行测试验证失败**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.config.ConfigChangeEventTest"
@@ -1079,7 +1079,7 @@ mvn test -pl . -Dtest="com.opcua.config.ConfigChangeEventTest"
 
 预期：编译失败
 
-- [ ] **Step 3: 实现 ConfigChangeEvent**
+- [x] **Step 3: 实现 ConfigChangeEvent**
 
 ```java
 package com.opcua.config;
@@ -1112,7 +1112,7 @@ public class ConfigChangeEvent {
 }
 ```
 
-- [ ] **Step 4: 实现 ConfigChangeListener**
+- [x] **Step 4: 实现 ConfigChangeListener**
 
 ```java
 package com.opcua.config;
@@ -1123,7 +1123,7 @@ public interface ConfigChangeListener {
 }
 ```
 
-- [ ] **Step 5: 运行测试验证通过**
+- [x] **Step 5: 运行测试验证通过**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.config.ConfigChangeEventTest"
@@ -1131,7 +1131,7 @@ mvn test -pl . -Dtest="com.opcua.config.ConfigChangeEventTest"
 
 预期：PASS
 
-- [ ] **Step 6: 提交**
+- [x] **Step 6: 提交**
 
 ```bash
 git add src/main/java/com/opcua/config/ConfigChangeEvent.java src/main/java/com/opcua/config/ConfigChangeListener.java src/test/java/com/opcua/config/ConfigChangeEventTest.java
@@ -1146,7 +1146,7 @@ git commit -m "feat: add ConfigChangeEvent and ConfigChangeListener interface"
 - Create: `src/main/java/com/opcua/api/controller/ForwardRuleController.java`
 - Create: `src/test/java/com/opcua/api/controller/ForwardRuleControllerTest.java`
 
-- [ ] **Step 1: 扩展 ConfigService 支持转发规则管理**
+- [x] **Step 1: 扩展 ConfigService 支持转发规则管理**
 
 在 `ConfigService.java` 中添加以下字段和方法：
 
@@ -1216,7 +1216,7 @@ public int getRuleCount() {
 // import com.opcua.forward.config.ForwardTarget;
 ```
 
-- [ ] **Step 2: 在 ConfigService 中添加 getDeviceState 方法**
+- [x] **Step 2: 在 ConfigService 中添加 getDeviceState 方法**
 
 ```java
 // 在 ConfigService 中添加（DeviceController 需要此方法）：
@@ -1234,7 +1234,7 @@ public DeviceState getDeviceState(String deviceId) {
 }
 ```
 
-- [ ] **Step 3: 编写 ForwardRuleController 集成测试**
+- [x] **Step 3: 编写 ForwardRuleController 集成测试**
 
 ```java
 package com.opcua.api.controller;
@@ -1391,7 +1391,7 @@ class ForwardRuleControllerTest {
 }
 ```
 
-- [ ] **Step 4: 运行测试验证失败**
+- [x] **Step 4: 运行测试验证失败**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.api.controller.ForwardRuleControllerTest" -Dspring.profiles.active=test
@@ -1399,7 +1399,7 @@ mvn test -pl . -Dtest="com.opcua.api.controller.ForwardRuleControllerTest" -Dspr
 
 预期：编译失败（ForwardRuleController 不存在）
 
-- [ ] **Step 5: 实现 ForwardRuleController**
+- [x] **Step 5: 实现 ForwardRuleController**
 
 ```java
 package com.opcua.api.controller;
@@ -1490,7 +1490,7 @@ public class ForwardRuleController {
 }
 ```
 
-- [ ] **Step 6: 运行测试验证通过**
+- [x] **Step 6: 运行测试验证通过**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.api.controller.ForwardRuleControllerTest" -Dspring.profiles.active=test
@@ -1498,7 +1498,7 @@ mvn test -pl . -Dtest="com.opcua.api.controller.ForwardRuleControllerTest" -Dspr
 
 预期：PASS（6 tests）
 
-- [ ] **Step 7: 提交**
+- [x] **Step 7: 提交**
 
 ```bash
 git add src/main/java/com/opcua/api/controller/ForwardRuleController.java src/test/java/com/opcua/api/controller/ForwardRuleControllerTest.java src/main/java/com/opcua/config/ConfigService.java
@@ -1513,7 +1513,7 @@ git commit -m "feat: add ForwardRuleController with CRUD and enable/disable endp
 - Modify: `src/main/java/com/opcua/core/ConnectionManager.java`
 - Create: `src/test/java/com/opcua/core/ConnectionManagerConfigIntegrationTest.java`
 
-- [ ] **Step 1: 编写 ConnectionManager 热加载测试**
+- [x] **Step 1: 编写 ConnectionManager 热加载测试**
 
 ```java
 package com.opcua.core;
@@ -1585,7 +1585,7 @@ class ConnectionManagerConfigIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试验证失败**
+- [x] **Step 2: 运行测试验证失败**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.core.ConnectionManagerConfigIntegrationTest"
@@ -1593,7 +1593,7 @@ mvn test -pl . -Dtest="com.opcua.core.ConnectionManagerConfigIntegrationTest"
 
 预期：`getDeviceCount()` 和 `updateDevice()` 方法不存在
 
-- [ ] **Step 3: 在 ConnectionManager 中添加 getDeviceCount 和 updateDevice 方法**
+- [x] **Step 3: 在 ConnectionManager 中添加 getDeviceCount 和 updateDevice 方法**
 
 ```java
 // 在 ConnectionManager.java 中添加以下方法：
@@ -1623,7 +1623,7 @@ public DeviceHandle updateDevice(String deviceId, DeviceConfig newConfig) {
 }
 ```
 
-- [ ] **Step 4: 运行测试验证通过**
+- [x] **Step 4: 运行测试验证通过**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.core.ConnectionManagerConfigIntegrationTest"
@@ -1631,7 +1631,7 @@ mvn test -pl . -Dtest="com.opcua.core.ConnectionManagerConfigIntegrationTest"
 
 预期：PASS（3 tests）
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add src/main/java/com/opcua/core/ConnectionManager.java src/test/java/com/opcua/core/ConnectionManagerConfigIntegrationTest.java
@@ -1646,7 +1646,7 @@ git commit -m "feat: add updateDevice and getDeviceCount to ConnectionManager"
 - Modify: `src/main/java/com/opcua/forward/engine/ForwardingEngine.java`
 - Create: `src/test/java/com/opcua/forward/engine/ForwardingEngineConfigIntegrationTest.java`
 
-- [ ] **Step 1: 编写 ForwardingEngine 热加载测试**
+- [x] **Step 1: 编写 ForwardingEngine 热加载测试**
 
 ```java
 package com.opcua.forward.engine;
@@ -1781,7 +1781,7 @@ class ForwardingEngineConfigIntegrationTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试验证通过**
+- [x] **Step 2: 运行测试验证通过**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.forward.engine.ForwardingEngineConfigIntegrationTest"
@@ -1789,7 +1789,7 @@ mvn test -pl . -Dtest="com.opcua.forward.engine.ForwardingEngineConfigIntegratio
 
 预期：PASS（4 tests）
 
-- [ ] **Step 3: 修改 ForwardingEngine 实现 ConfigChangeListener**
+- [x] **Step 3: 修改 ForwardingEngine 实现 ConfigChangeListener**
 
 ```java
 // 修改 ForwardingEngine.java：
@@ -1869,11 +1869,11 @@ mvn test -pl . -Dtest="com.opcua.forward.engine.ForwardingEngineConfigIntegratio
 // }
 ```
 
-- [ ] **Step 4: 执行修改**
+- [x] **Step 4: 执行修改**
 
 ForwardingEngine.java 的修改通过 Edit 工具执行（见下方 Step 5 中的具体编辑指令）。
 
-- [ ] **Step 5: 验证现有测试仍通过**
+- [x] **Step 5: 验证现有测试仍通过**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.forward.engine.*"
@@ -1881,7 +1881,7 @@ mvn test -pl . -Dtest="com.opcua.forward.engine.*"
 
 预期：所有现有 ForwardingEngine 测试通过
 
-- [ ] **Step 6: 提交**
+- [x] **Step 6: 提交**
 
 ```bash
 git add src/main/java/com/opcua/forward/engine/ForwardingEngine.java src/test/java/com/opcua/forward/engine/ForwardingEngineConfigIntegrationTest.java
@@ -1896,7 +1896,7 @@ git commit -m "feat: add ForwardingEngine hot-reload via ConfigChangeListener"
 - Create: `src/main/java/com/opcua/config/ConfigPersistenceService.java`
 - Create: `src/test/java/com/opcua/config/ConfigPersistenceServiceTest.java`
 
-- [ ] **Step 1: 编写 ConfigPersistenceService 测试**
+- [x] **Step 1: 编写 ConfigPersistenceService 测试**
 
 ```java
 package com.opcua.config;
@@ -1993,7 +1993,7 @@ class ConfigPersistenceServiceTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试验证失败**
+- [x] **Step 2: 运行测试验证失败**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.config.ConfigPersistenceServiceTest"
@@ -2001,7 +2001,7 @@ mvn test -pl . -Dtest="com.opcua.config.ConfigPersistenceServiceTest"
 
 预期：编译失败（ConfigPersistenceService 不存在）
 
-- [ ] **Step 3: 实现 ConfigPersistenceService**
+- [x] **Step 3: 实现 ConfigPersistenceService**
 
 ```java
 package com.opcua.config;
@@ -2118,7 +2118,7 @@ public class ConfigPersistenceService {
 }
 ```
 
-- [ ] **Step 4: 运行测试验证通过**
+- [x] **Step 4: 运行测试验证通过**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.config.ConfigPersistenceServiceTest"
@@ -2126,7 +2126,7 @@ mvn test -pl . -Dtest="com.opcua.config.ConfigPersistenceServiceTest"
 
 预期：PASS（4 tests）
 
-- [ ] **Step 5: 提交**
+- [x] **Step 5: 提交**
 
 ```bash
 git add src/main/java/com/opcua/config/ConfigPersistenceService.java src/test/java/com/opcua/config/ConfigPersistenceServiceTest.java
@@ -2141,7 +2141,7 @@ git commit -m "feat: add ConfigPersistenceService with atomic YAML write"
 - Modify: `src/main/java/com/opcua/config/ConfigService.java`
 - Create: `src/test/java/com/opcua/config/ConfigServiceTest.java`
 
-- [ ] **Step 1: 编写 ConfigService 线程安全测试**
+- [x] **Step 1: 编写 ConfigService 线程安全测试**
 
 ```java
 package com.opcua.config;
@@ -2262,7 +2262,7 @@ class ConfigServiceTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试验证通过**
+- [x] **Step 2: 运行测试验证通过**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.config.ConfigServiceTest"
@@ -2270,7 +2270,7 @@ mvn test -pl . -Dtest="com.opcua.config.ConfigServiceTest"
 
 预期：PASS（6 tests）
 
-- [ ] **Step 3: 在 ConfigService 中添加持久化集成**
+- [x] **Step 3: 在 ConfigService 中添加持久化集成**
 
 ```java
 // 在 ConfigService.java 中添加以下字段和方法：
@@ -2328,7 +2328,7 @@ mvn test -pl . -Dtest="com.opcua.config.ConfigServiceTest"
 // }
 ```
 
-- [ ] **Step 4: 提交**
+- [x] **Step 4: 提交**
 
 ```bash
 git add src/main/java/com/opcua/config/ConfigService.java src/test/java/com/opcua/config/ConfigServiceTest.java
@@ -2344,7 +2344,7 @@ git commit -m "feat: add persistence integration and thread-safety tests to Conf
 - Modify: `src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports`
 - Create: `src/test/java/com/opcua/config/OpcUaConfigManagementAutoConfigurationTest.java`
 
-- [ ] **Step 1: 编写 AutoConfiguration 测试**
+- [x] **Step 1: 编写 AutoConfiguration 测试**
 
 ```java
 package com.opcua.config;
@@ -2404,7 +2404,7 @@ class OpcUaConfigManagementAutoConfigurationTest {
 }
 ```
 
-- [ ] **Step 2: 运行测试验证失败**
+- [x] **Step 2: 运行测试验证失败**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.config.OpcUaConfigManagementAutoConfigurationTest" -Dspring.profiles.active=test
@@ -2412,7 +2412,7 @@ mvn test -pl . -Dtest="com.opcua.config.OpcUaConfigManagementAutoConfigurationTe
 
 预期：ConfigService bean 不存在（尚未注册到 AutoConfiguration）
 
-- [ ] **Step 3: 实现 OpcUaConfigManagementAutoConfiguration**
+- [x] **Step 3: 实现 OpcUaConfigManagementAutoConfiguration**
 
 ```java
 package com.opcua.config;
@@ -2487,7 +2487,7 @@ public class OpcUaConfigManagementAutoConfiguration {
 }
 ```
 
-- [ ] **Step 4: 注册 AutoConfiguration**
+- [x] **Step 4: 注册 AutoConfiguration**
 
 在 `src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` 末尾添加一行：
 
@@ -2495,7 +2495,7 @@ public class OpcUaConfigManagementAutoConfiguration {
 com.opcua.config.OpcUaConfigManagementAutoConfiguration
 ```
 
-- [ ] **Step 5: 更新 application.yml 添加持久化配置**
+- [x] **Step 5: 更新 application.yml 添加持久化配置**
 
 在 `src/main/resources/application.yml` 末尾添加：
 
@@ -2506,7 +2506,7 @@ opcua:
     persistence-path: config/opcua-runtime.yml
 ```
 
-- [ ] **Step 6: 运行测试验证通过**
+- [x] **Step 6: 运行测试验证通过**
 
 ```bash
 mvn test -pl . -Dtest="com.opcua.config.OpcUaConfigManagementAutoConfigurationTest" -Dspring.profiles.active=test
@@ -2514,7 +2514,7 @@ mvn test -pl . -Dtest="com.opcua.config.OpcUaConfigManagementAutoConfigurationTe
 
 预期：PASS（5 tests）
 
-- [ ] **Step 7: 提交**
+- [x] **Step 7: 提交**
 
 ```bash
 git add src/main/java/com/opcua/config/OpcUaConfigManagementAutoConfiguration.java src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports src/main/resources/application.yml src/test/java/com/opcua/config/OpcUaConfigManagementAutoConfigurationTest.java
@@ -2528,7 +2528,7 @@ git commit -m "feat: add OpcUaConfigManagementAutoConfiguration wiring all beans
 **文件：**
 - Create: `src/main/java/com/opcua/api/controller/SystemController.java`
 
-- [ ] **Step 1: 实现 SystemController**
+- [x] **Step 1: 实现 SystemController**
 
 ```java
 package com.opcua.api.controller;
@@ -2580,7 +2580,7 @@ public class SystemController {
 }
 ```
 
-- [ ] **Step 2: 提交**
+- [x] **Step 2: 提交**
 
 ```bash
 git add src/main/java/com/opcua/api/controller/SystemController.java
@@ -2594,7 +2594,7 @@ git commit -m "feat: add SystemController with /api/health and /api/status endpo
 **文件：**
 - Create: `Dockerfile`
 
-- [ ] **Step 1: 创建 Dockerfile**
+- [x] **Step 1: 创建 Dockerfile**
 
 ```dockerfile
 # Stage 1: Maven build
@@ -2616,7 +2616,7 @@ HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
 ENTRYPOINT ["java", "-jar", "app.jar"]
 ```
 
-- [ ] **Step 2: 提交**
+- [x] **Step 2: 提交**
 
 ```bash
 git add Dockerfile
@@ -2631,7 +2631,7 @@ git commit -m "feat: add multi-stage Dockerfile for Maven + JRE"
 - Create: `docker-compose.yml`
 - Create: `src/main/resources/application-docker.yml`
 
-- [ ] **Step 1: 创建 docker-compose.yml**
+- [x] **Step 1: 创建 docker-compose.yml**
 
 ```yaml
 version: "3.8"
@@ -2700,7 +2700,7 @@ volumes:
   influxdb-data:
 ```
 
-- [ ] **Step 2: 创建 application-docker.yml**
+- [x] **Step 2: 创建 application-docker.yml**
 
 ```yaml
 # src/main/resources/application-docker.yml
@@ -2723,7 +2723,7 @@ influxdb:
   url: http://influxdb:8086
 ```
 
-- [ ] **Step 3: 提交**
+- [x] **Step 3: 提交**
 
 ```bash
 git add docker-compose.yml src/main/resources/application-docker.yml
@@ -2737,7 +2737,7 @@ git commit -m "feat: add docker-compose.yml with Kafka, InfluxDB, Redis services
 **文件：**
 - Modify: `pom.xml`
 
-- [ ] **Step 1: 添加 spring-session-data-redis 依赖**
+- [x] **Step 1: 添加 spring-session-data-redis 依赖**
 
 在 `pom.xml` 的 `<dependencies>` 中添加（放在 `spring-boot-starter-web` 之后）：
 
@@ -2749,7 +2749,7 @@ git commit -m "feat: add docker-compose.yml with Kafka, InfluxDB, Redis services
         </dependency>
 ```
 
-- [ ] **Step 2: 验证依赖正确解析**
+- [x] **Step 2: 验证依赖正确解析**
 
 ```bash
 mvn dependency:resolve -pl . | grep spring-session-data-redis
@@ -2757,7 +2757,7 @@ mvn dependency:resolve -pl . | grep spring-session-data-redis
 
 预期：显示 spring-session-data-redis 依赖已解析
 
-- [ ] **Step 3: 提交**
+- [x] **Step 3: 提交**
 
 ```bash
 git add pom.xml
@@ -2770,7 +2770,7 @@ git commit -m "feat: add spring-session-data-redis dependency for cluster sessio
 
 **文件：** 无新文件，验证所有测试通过
 
-- [ ] **Step 1: 运行全部测试**
+- [x] **Step 1: 运行全部测试**
 
 ```bash
 mvn test -pl . -Dspring.profiles.active=test
@@ -2778,7 +2778,7 @@ mvn test -pl . -Dspring.profiles.active=test
 
 预期：所有测试通过（包括新增和现有测试）
 
-- [ ] **Step 2: 检查测试覆盖**
+- [x] **Step 2: 检查测试覆盖**
 
 确认以下测试类全部通过：
 - `ApiResponseTest`
@@ -2794,7 +2794,7 @@ mvn test -pl . -Dspring.profiles.active=test
 - `OpcUaConfigManagementAutoConfigurationTest`
 - 所有现有测试（`com.opcua.core.*`, `com.opcua.forward.*`, `com.opcua.config.*`）
 
-- [ ] **Step 3: 验证 Docker Compose 配置有效性**
+- [x] **Step 3: 验证 Docker Compose 配置有效性**
 
 ```bash
 docker compose config --quiet
@@ -2802,7 +2802,7 @@ docker compose config --quiet
 
 预期：无错误输出
 
-- [ ] **Step 4: 提交**
+- [x] **Step 4: 提交**
 
 ```bash
 git add -A
