@@ -49,3 +49,23 @@
 - [x] 8.4 编写 docker compose 启动验证（服务启动 + 健康检查）
 
 <!-- docker compose 启动验证：本地环境 docker 不可用，YAML 语法已通过 Python yaml.safe_load 验证；实际服务启动验证留待 Docker 环境执行 -->
+
+## 代码审查修复记录
+
+### 已修复（Critical + Important）
+- C1: ConnectionManager 适配器桥接 ConfigChangeEvent（避免 core→config 循环依赖）
+- C2: InfluxDB 2.x 环境变量（INFLUXDB_INIT_*）
+- C3: Kafka advertised listeners 改为 kafka:9092
+- I1: HTTP 状态码对齐 spec（POST→201, DELETE→204）
+- I2: /api/health 健康聚合（设备级状态详情 + DEGRADED 状态）
+- I3: /api/status Sender 配置摘要（configuredSenderTypes）
+- I4: InfluxDB healthcheck + depends_on
+- I5: Dockerfile 安装 curl
+- I6: DeviceConfigDTO.fromDeviceConfig 设置 lastConnectedAt
+- I7: 启动恢复 syncToListeners 同步规则到 ForwardingEngine
+- I8: ForwardingEngine RULE_ADDED 重复检查
+
+### 已接受为已知限制
+- I9: ConnectionManager.updateDevice 非原子（removeDevice + addDesign 有窗口期）— 设计权衡，接受
+- I3 部分: Sender 实际连通状态需要 Change 2 扩展 Sender 接口（isConnected），当前仅报告配置层面 target 类型分布
+- M1-M4: 小问题，不影响功能，接受

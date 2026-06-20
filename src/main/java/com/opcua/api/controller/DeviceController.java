@@ -3,9 +3,9 @@ package com.opcua.api.controller;
 import com.opcua.api.dto.ApiResponse;
 import com.opcua.api.dto.DeviceConfigDTO;
 import com.opcua.config.ConfigService;
-import com.opcua.model.ConnectionState;
 import com.opcua.model.DeviceConfig;
 import com.opcua.model.DeviceState;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,11 +25,7 @@ public class DeviceController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<DeviceConfigDTO>>> getAll() {
         List<DeviceConfigDTO> dtos = configService.getAllDevices().stream()
-                .map(dc -> {
-                    DeviceState state = configService.getDeviceState(dc.getDeviceId());
-                    ConnectionState cs = state != null ? state.getState() : null;
-                    return DeviceConfigDTO.fromDeviceConfig(dc, cs);
-                })
+                .map(dc -> DeviceConfigDTO.fromDeviceConfig(dc, configService.getDeviceState(dc.getDeviceId())))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.success(dtos));
     }
@@ -42,8 +38,7 @@ public class DeviceController {
                     .body(ApiResponse.error(404, "Device not found: " + id));
         }
         DeviceState state = configService.getDeviceState(id);
-        ConnectionState cs = state != null ? state.getState() : null;
-        return ResponseEntity.ok(ApiResponse.success(DeviceConfigDTO.fromDeviceConfig(config, cs)));
+        return ResponseEntity.ok(ApiResponse.success(DeviceConfigDTO.fromDeviceConfig(config, state)));
     }
 
     @PostMapping
@@ -58,7 +53,8 @@ public class DeviceController {
         }
         DeviceConfig config = DeviceConfigDTO.toDeviceConfig(dto);
         configService.addDevice(config);
-        return ResponseEntity.ok(ApiResponse.success(null));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.of(201, "created", null));
     }
 
     @PutMapping("/{id}")
@@ -75,8 +71,8 @@ public class DeviceController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
+    public ResponseEntity<Void> delete(@PathVariable String id) {
         configService.removeDevice(id);
-        return ResponseEntity.ok(ApiResponse.success(null));
+        return ResponseEntity.noContent().build();
     }
 }

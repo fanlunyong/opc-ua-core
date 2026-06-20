@@ -110,11 +110,15 @@ public class ForwardingEngine implements OpcUaDataListener, ConfigChangeListener
         switch (event.getType()) {
             case RULE_ADDED -> {
                 ForwardRule rule = (ForwardRule) event.getPayload();
-                dynamicRules.add(rule);
-                if (dynamicRules.size() == 1) {
-                    opcUaService.registerListener(this);
+                boolean exists = dynamicRules.stream()
+                        .anyMatch(r -> r.getName().equals(event.getTargetId()));
+                if (!exists) {
+                    dynamicRules.add(rule);
+                    if (dynamicRules.size() == 1) {
+                        opcUaService.registerListener(this);
+                    }
                 }
-                logger.info("Rule added via config change: {}", event.getTargetId());
+                logger.info("Rule added via config change: {} (exists={})", event.getTargetId(), exists);
             }
             case RULE_REMOVED -> {
                 dynamicRules.removeIf(r -> r.getName().equals(event.getTargetId()));

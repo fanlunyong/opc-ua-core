@@ -9,6 +9,8 @@ RUN mvn package -DskipTests -B
 # Stage 2: JRE runtime
 FROM eclipse-temurin:17-jre
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/target/*.jar app.jar
 RUN mkdir -p /app/config
 EXPOSE 8080

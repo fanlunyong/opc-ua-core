@@ -53,12 +53,12 @@ class DeviceControllerTest {
         String postResp = mockMvc.perform(post("/api/devices")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.code").value(201))
                 .andReturn().getResponse().getContentAsString();
 
         ApiResponse<?> parsed = objectMapper.readValue(postResp, ApiResponse.class);
-        assertThat(parsed.getCode()).isEqualTo(200);
+        assertThat(parsed.getCode()).isEqualTo(201);
 
         // GET all
         mockMvc.perform(get("/api/devices"))
@@ -90,11 +90,10 @@ class DeviceControllerTest {
         mockMvc.perform(post("/api/devices")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(delete("/api/devices/device-to-delete"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/devices/device-to-delete"))
                 .andExpect(status().isNotFound());
@@ -120,7 +119,7 @@ class DeviceControllerTest {
         mockMvc.perform(post("/api/devices")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         // 第二次 POST 同 ID 应返回 409
         mockMvc.perform(post("/api/devices")
@@ -139,7 +138,7 @@ class DeviceControllerTest {
         mockMvc.perform(post("/api/devices")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         dto.setName("New Name");
         mockMvc.perform(put("/api/devices/device-update")

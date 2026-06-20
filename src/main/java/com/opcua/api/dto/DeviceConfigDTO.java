@@ -1,7 +1,7 @@
 package com.opcua.api.dto;
 
-import com.opcua.model.ConnectionState;
 import com.opcua.model.DeviceConfig;
+import com.opcua.model.DeviceState;
 import com.opcua.model.NodeConfig;
 import com.opcua.model.SubscriptionGroupConfig;
 
@@ -68,7 +68,7 @@ public class DeviceConfigDTO {
         return config;
     }
 
-    public static DeviceConfigDTO fromDeviceConfig(DeviceConfig config, ConnectionState state) {
+    public static DeviceConfigDTO fromDeviceConfig(DeviceConfig config, DeviceState state) {
         DeviceConfigDTO dto = new DeviceConfigDTO();
         dto.setId(config.getDeviceId());
         dto.setName(config.getProductId());
@@ -87,7 +87,10 @@ public class DeviceConfigDTO {
             dto.setNodes(nodes);
         }
         if (state != null) {
-            dto.setStatus(state.name());
+            dto.setStatus(state.getState().name());
+            if (state.getConnectedSince() != null) {
+                dto.setLastConnectedAt(state.getConnectedSince().toString());
+            }
         }
         return dto;
     }

@@ -53,8 +53,8 @@ class ForwardRuleControllerTest {
         mockMvc.perform(post("/api/forward/rules")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value(200));
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.code").value(201));
 
         mockMvc.perform(get("/api/forward/rules"))
                 .andExpect(status().isOk())
@@ -72,10 +72,10 @@ class ForwardRuleControllerTest {
         mockMvc.perform(post("/api/forward/rules")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(delete("/api/forward/rules/to-delete"))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
 
         mockMvc.perform(get("/api/forward/rules"))
                 .andExpect(status().isOk())
@@ -93,7 +93,7 @@ class ForwardRuleControllerTest {
         mockMvc.perform(post("/api/forward/rules")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(patch("/api/forward/rules/toggle-rule/disable"))
                 .andExpect(status().isOk());
@@ -120,7 +120,7 @@ class ForwardRuleControllerTest {
         mockMvc.perform(post("/api/forward/rules")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         mockMvc.perform(post("/api/forward/rules")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -138,7 +138,7 @@ class ForwardRuleControllerTest {
         mockMvc.perform(post("/api/forward/rules")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(dto)))
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
         dto.setConfig(Map.of("bootstrapServers", "localhost:9092", "topic", "new-topic"));
         mockMvc.perform(put("/api/forward/rules/update-rule")

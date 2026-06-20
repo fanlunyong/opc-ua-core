@@ -4,6 +4,7 @@ import com.opcua.api.dto.ApiResponse;
 import com.opcua.api.dto.ForwardRuleDTO;
 import com.opcua.config.ConfigService;
 import com.opcua.forward.config.ForwardRule;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -50,7 +51,8 @@ public class ForwardRuleController {
         }
         ForwardRule rule = ForwardRuleDTO.toForwardRule(dto);
         configService.addRule(rule);
-        return ResponseEntity.ok(ApiResponse.success(null));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.of(201, "created", null));
     }
 
     @PutMapping("/{name}")
@@ -67,9 +69,9 @@ public class ForwardRuleController {
     }
 
     @DeleteMapping("/{name}")
-    public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String name) {
+    public ResponseEntity<Void> delete(@PathVariable String name) {
         configService.removeRule(name);
-        return ResponseEntity.ok(ApiResponse.success(null));
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{name}/enable")

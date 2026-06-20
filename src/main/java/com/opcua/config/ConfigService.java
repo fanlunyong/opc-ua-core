@@ -33,6 +33,7 @@ public class ConfigService {
 
     /**
      * 从持久化文件恢复配置（启动时调用）。
+     * 直接 put 到 map，不 fire 事件。恢复后调用 syncToListeners() 同步到运行时组件。
      */
     public void loadFromPersistence() {
         if (persistenceService == null) return;
@@ -45,6 +46,20 @@ public class ConfigService {
             rules.put(rule.getName(), rule);
         }
         logger.info("Loaded {} devices and {} rules from persistence", savedDevices.size(), savedRules.size());
+    }
+
+    /**
+     * 将当前配置同步到所有已注册的 listeners（启动恢复后调用）。
+     * 对每条设备 fire DEVICE_ADDED、每条规则 fire RULE_ADDED。
+     * listeners 负责重复检查，避免与 YAML 初始配置重复。
+     */
+    public void syncToListeners() {
+        for (DeviceConfig dc : getAllDevices()) {
+            fireEvent(new ConfigChangeEvent(ConfigChangeEvent.ChangeType.DEVICE_ADDED, dc.getDeviceId(), dc));
+        }
+        for (ForwardRule rule : getAllRules()) {
+            fireEvent(new ConfigChangeEvent(ConfigChangeEvent.ChangeType.RULE_ADDED, rule.getName(), rule));
+        }
     }
 
     private void persistIfEnabled() {

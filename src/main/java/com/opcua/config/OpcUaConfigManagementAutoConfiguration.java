@@ -5,6 +5,9 @@ import com.opcua.api.controller.ForwardRuleController;
 import com.opcua.api.controller.SystemController;
 import com.opcua.core.ConnectionManager;
 import com.opcua.forward.engine.ForwardingEngine;
+import com.opcua.model.DeviceConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -26,6 +29,8 @@ import java.nio.file.Paths;
 @ConditionalOnProperty(prefix = "opcua.config-management", name = "enabled",
         havingValue = "true", matchIfMissing = true)
 public class OpcUaConfigManagementAutoConfiguration {
+
+    private static final Logger logger = LoggerFactory.getLogger(OpcUaConfigManagementAutoConfiguration.class);
 
     @Bean
     @ConditionalOnMissingBean
@@ -67,9 +72,16 @@ public class OpcUaConfigManagementAutoConfiguration {
 
     /**
      * 在 ConfigService、ConnectionManager、ForwardingEngine 都创建后，
-     * 注入依赖并从持久化文件恢复配置、注册 ForwardingEngine 为监听器。
-     * ConnectionManager 和 ForwardingEngine 通过 ObjectProvider 可选注入，
-     * 以兼容 opcua.enabled=false 或 opcua.forward.enabled=false 的场景。
+     * 注入依赖、注册监听器、从持久化文件恢复配置并同步到运行时组件。
+     *
+     * <p>ConnectionManager 通过适配器桥接 ConfigChangeEvent（避免 core → config
+     * 包依赖）。ForwardingEngine 直接实现 ConfigChangeListener。两者均通过
+     * ObjectProvider 可选注入，兼容 opcua.enabled=false 或
+     * opcua.forward.enabled=false 的场景。</p>
+     *
+     * <p>启动恢复顺序：先注册 listeners，再 loadFromPersistence + syncToListeners，
+     * 确保持久化的设备/规则通过事件同步到 ConnectionManager 和 ForwardingEngine。
+     * 适配器和 ForwardingEngine 均做重复检查，避免与 YAML 初始配置重复。</p>
      */
     @Bean
     public ConfigServiceInitializer configServiceInitializer(ConfigService configService,
@@ -77,15 +89,36 @@ public class OpcUaConfigManagementAutoConfiguration {
                                               ObjectProvider<ConnectionManager> connectionManagerProvider,
                                               ObjectProvider<ForwardingEngine> forwardingEngineProvider) {
         ConnectionManager connectionManager = connectionManagerProvider.getIfAvailable();
+        ForwardingEngine forwardingEngine = forwardingEngineProvider.getIfAvailable();
+
         if (connectionManager != null) {
             configService.setConnectionManager(connectionManager);
+            configService.registerListener(event -> {
+                switch (event.getType()) {
+                    case DEVICE_ADDED -> {
+                        DeviceConfig dc = (DeviceConfig) event.getPayload();
+                        if (connectionManager.getState(event.getTargetId()) == null) {
+                            connectionManager.addDevice(dc);
+                        }
+                    }
+                    case DEVICE_REMOVED -> connectionManager.removeDevice(event.getTargetId());
+                    case DEVICE_UPDATED -> {
+                        DeviceConfig dc = (DeviceConfig) event.getPayload();
+                        connectionManager.updateDevice(event.getTargetId(), dc);
+                    }
+                }
+            });
         }
-        configService.setPersistenceService(persistenceService);
-        configService.loadFromPersistence();
-        ForwardingEngine forwardingEngine = forwardingEngineProvider.getIfAvailable();
+
         if (forwardingEngine != null) {
             configService.registerListener(forwardingEngine);
         }
+
+        configService.setPersistenceService(persistenceService);
+        configService.loadFromPersistence();
+        configService.syncToListeners();
+        logger.info("ConfigService initialized: {} devices, {} rules",
+                configService.getDeviceCount(), configService.getRuleCount());
         return new ConfigServiceInitializer();
     }
 

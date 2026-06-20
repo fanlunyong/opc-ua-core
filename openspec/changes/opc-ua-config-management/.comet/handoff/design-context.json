@@ -1,0 +1,18 @@
+{
+  "change": "opc-ua-config-management",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "70a2fbe1f5a4220395d77ed9879eaedae60891acba989bf5cb5b25cc7c30c921",
+  "files": [
+    { "path": "openspec/changes/opc-ua-config-management/proposal.md", "sha256": "6ba71dba7688a45bf6fa5b7ca1fd8c845362e4b36923ba27ada9f675574f0a0b" },
+    { "path": "openspec/changes/opc-ua-config-management/design.md", "sha256": "6a75c67ed76c204b3a4f98434d49b287f0c5e88a4f54a9e56f1d9c156ba5b07a" },
+    { "path": "openspec/changes/opc-ua-config-management/tasks.md", "sha256": "57c399cc34b1b8dfe3c3703c7643125b9c7184a90713aab883ced8f8ff825eb1" },
+    { "path": "openspec/changes/opc-ua-config-management/specs/cluster-support/spec.md", "sha256": "757a70eec84aff8f4f54f35136b85bc6836a7472cf1f05662b85261b113d1df5" },
+    { "path": "openspec/changes/opc-ua-config-management/specs/device-api/spec.md", "sha256": "9a52b6d0f3fd2476f4e0eaccae5470dd238e8b06fc2484007bf0967db0cf265d" },
+    { "path": "openspec/changes/opc-ua-config-management/specs/docker-deployment/spec.md", "sha256": "8c6e0f62c116ec32883131d99682d1c7b5ca228ab219ce297021e2d7b3f61286" },
+    { "path": "openspec/changes/opc-ua-config-management/specs/forward-api/spec.md", "sha256": "4bca0d3d1c288145c072d5cb7a1311ded4ab7389e7b04060c2b2be2fe18fcfed" },
+    { "path": "openspec/changes/opc-ua-config-management/specs/runtime-config/spec.md", "sha256": "f13a3b2409d0fbd64da8d9121043b208747ae255d9792c8794f17ef386796d5c" }
+  ]
+}
