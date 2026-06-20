@@ -2,6 +2,7 @@ package com.opcua.config;
 
 import com.opcua.api.controller.DeviceController;
 import com.opcua.api.controller.ForwardRuleController;
+import com.opcua.api.controller.SystemController;
 import com.opcua.core.ConnectionManager;
 import com.opcua.forward.engine.ForwardingEngine;
 import org.springframework.beans.factory.ObjectProvider;
@@ -56,6 +57,12 @@ public class OpcUaConfigManagementAutoConfiguration {
     @ConditionalOnMissingBean
     public ForwardRuleController forwardRuleController(ConfigService configService) {
         return new ForwardRuleController(configService);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public SystemController systemController(ConfigService configService) {
+        return new SystemController(configService);
     }
 
     /**

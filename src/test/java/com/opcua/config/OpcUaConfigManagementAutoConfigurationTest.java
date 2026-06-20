@@ -28,6 +28,9 @@ class OpcUaConfigManagementAutoConfigurationTest {
     @Autowired(required = false)
     private GlobalExceptionHandler globalExceptionHandler;
 
+    @Autowired(required = false)
+    private com.opcua.api.controller.SystemController systemController;
+
     @Test
     void shouldLoadConfigServiceBean() {
         assertThat(configService).isNotNull();
@@ -51,5 +54,10 @@ class OpcUaConfigManagementAutoConfigurationTest {
     @Test
     void shouldLoadGlobalExceptionHandlerBean() {
         assertThat(globalExceptionHandler).isNotNull();
+    }
+
+    @Test
+    void shouldLoadSystemControllerBean() {
+        assertThat(systemController).isNotNull();
     }
 }
