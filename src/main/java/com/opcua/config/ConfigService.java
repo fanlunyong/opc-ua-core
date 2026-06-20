@@ -1,5 +1,7 @@
 package com.opcua.config;
 
+import com.opcua.forward.config.ForwardRule;
+import com.opcua.forward.config.ForwardTarget;
 import com.opcua.model.DeviceConfig;
 import com.opcua.model.DeviceState;
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ public class ConfigService {
     private static final Logger logger = LoggerFactory.getLogger(ConfigService.class);
 
     private final Map<String, DeviceConfig> devices = new ConcurrentHashMap<>();
+    private final Map<String, ForwardRule> rules = new ConcurrentHashMap<>();
     private final List<ConfigChangeListener> listeners = new CopyOnWriteArrayList<>();
 
     private com.opcua.core.ConnectionManager connectionManager;
@@ -65,6 +68,62 @@ public class ConfigService {
 
     public int getDeviceCount() {
         return devices.size();
+    }
+
+    // --- 转发规则管理 ---
+
+    public void addRule(ForwardRule rule) {
+        String name = rule.getName();
+        if (rules.containsKey(name)) {
+            throw new IllegalStateException("Rule already exists: " + name);
+        }
+        rules.put(name, rule);
+        fireEvent(new ConfigChangeEvent(ConfigChangeEvent.ChangeType.RULE_ADDED, name, rule));
+        logger.info("Rule added: {}", name);
+    }
+
+    public void removeRule(String name) {
+        ForwardRule removed = rules.remove(name);
+        if (removed == null) {
+            throw new IllegalArgumentException("Rule not found: " + name);
+        }
+        fireEvent(new ConfigChangeEvent(ConfigChangeEvent.ChangeType.RULE_REMOVED, name, removed));
+        logger.info("Rule removed: {}", name);
+    }
+
+    public void updateRule(String name, ForwardRule rule) {
+        if (!rules.containsKey(name)) {
+            throw new IllegalArgumentException("Rule not found: " + name);
+        }
+        rules.put(name, rule);
+        fireEvent(new ConfigChangeEvent(ConfigChangeEvent.ChangeType.RULE_UPDATED, name, rule));
+        logger.info("Rule updated: {}", name);
+    }
+
+    public void toggleRule(String name, boolean enabled) {
+        ForwardRule rule = rules.get(name);
+        if (rule == null) {
+            throw new IllegalArgumentException("Rule not found: " + name);
+        }
+        if (rule.getTargets() != null) {
+            for (ForwardTarget t : rule.getTargets()) {
+                t.setEnabled(enabled);
+            }
+        }
+        fireEvent(new ConfigChangeEvent(ConfigChangeEvent.ChangeType.RULE_TOGGLED, name, rule));
+        logger.info("Rule toggled: {} enabled={}", name, enabled);
+    }
+
+    public ForwardRule getRule(String name) {
+        return rules.get(name);
+    }
+
+    public List<ForwardRule> getAllRules() {
+        return List.copyOf(rules.values());
+    }
+
+    public int getRuleCount() {
+        return rules.size();
     }
 
     public DeviceState getDeviceState(String deviceId) {
