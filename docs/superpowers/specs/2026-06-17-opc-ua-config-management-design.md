@@ -3,6 +3,8 @@ comet_change: opc-ua-config-management
 role: technical-design
 canonical_spec: openspec
 status: final
+archived-with: 2026-06-20-opc-ua-config-management
+status: final
 ---
 
 # OPC UA 配置管理 — 技术设计文档

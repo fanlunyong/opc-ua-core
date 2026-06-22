@@ -1,0 +1,41 @@
+---
+devices:
+- deviceId: "dup-device"
+  productId: null
+  endpointUrl: "opc.tcp://localhost:4840"
+  sessionTimeout: 600
+  maxConnections: 3
+  idleTimeoutSeconds: 300
+  security:
+    policy: "None"
+    certificatePath: null
+    username: null
+  subscriptions: []
+  polling: []
+rules:
+- name: "toggle-rule"
+  match:
+    productId: null
+    deviceId: null
+    nodeId: null
+  targets:
+  - type: "kafka"
+    enabled: true
+    queueCapacity: 1000
+    workerThreads: 1
+    bootstrapServers: "localhost:9092"
+    securityProtocol: null
+    topic: "test"
+    url: null
+    bucket: null
+    org: null
+    token: null
+    brokerUrl: null
+    clientId: null
+    qos: 1
+    timeoutMillis: 5000
+    properties: {}
+  alerts: null
+  qualityFilter:
+    dropBad: true
+    dropUncertain: false

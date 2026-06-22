@@ -2,6 +2,7 @@
 change: opc-ua-config-management
 design-doc: docs/superpowers/specs/2026-06-17-opc-ua-config-management-design.md
 base-ref: 5cfefe60a726fdab8460931bcc401fb63a74ff40
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 # OPC UA 配置管理 实施计划
@@ -14,6 +15,7 @@ base-ref: 5cfefe60a726fdab8460931bcc401fb63a74ff40
 
 **技术栈：** Java 17, Spring Boot 3.2.6, Eclipse Milo 0.6.14, Jackson YAML, Spring Session Redis, Docker, JUnit 5
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ## 文件结构总览
@@ -65,6 +67,7 @@ base-ref: 5cfefe60a726fdab8460931bcc401fb63a74ff40
 | `src/test/java/com/opcua/forward/engine/ForwardingEngineConfigIntegrationTest.java` | ForwardingEngine 热加载集成测试 |
 | `src/test/resources/application-test.yml` | 测试环境配置 |
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 1: ApiResponse 统一响应格式
@@ -182,6 +185,7 @@ git add src/main/java/com/opcua/api/dto/ApiResponse.java src/test/java/com/opcua
 git commit -m "feat: add ApiResponse unified response format"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 2: DTO 模型与转换
@@ -592,6 +596,7 @@ git add src/main/java/com/opcua/api/dto/DeviceConfigDTO.java src/main/java/com/o
 git commit -m "feat: add DeviceConfigDTO and ForwardRuleDTO with model conversion"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 3: GlobalExceptionHandler 全局异常处理
@@ -657,6 +662,7 @@ git add src/main/java/com/opcua/config/GlobalExceptionHandler.java
 git commit -m "feat: add GlobalExceptionHandler for REST API error handling"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 4: DeviceController 设备管理 API
@@ -1031,6 +1037,7 @@ git add src/main/java/com/opcua/config/ConfigService.java src/main/java/com/opcu
 git commit -m "feat: add DeviceController with CRUD endpoints and ConfigService skeleton"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 5: ConfigChangeEvent 与 ConfigChangeListener
@@ -1138,6 +1145,7 @@ git add src/main/java/com/opcua/config/ConfigChangeEvent.java src/main/java/com/
 git commit -m "feat: add ConfigChangeEvent and ConfigChangeListener interface"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 6: ForwardRuleController 转发规则 API
@@ -1505,6 +1513,7 @@ git add src/main/java/com/opcua/api/controller/ForwardRuleController.java src/te
 git commit -m "feat: add ForwardRuleController with CRUD and enable/disable endpoints"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 7: ConnectionManager 热加载支持
@@ -1638,6 +1647,7 @@ git add src/main/java/com/opcua/core/ConnectionManager.java src/test/java/com/op
 git commit -m "feat: add updateDevice and getDeviceCount to ConnectionManager"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 8: ForwardingEngine 规则热加载
@@ -1888,6 +1898,7 @@ git add src/main/java/com/opcua/forward/engine/ForwardingEngine.java src/test/ja
 git commit -m "feat: add ForwardingEngine hot-reload via ConfigChangeListener"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 9: ConfigPersistenceService YAML 持久化
@@ -2133,6 +2144,7 @@ git add src/main/java/com/opcua/config/ConfigPersistenceService.java src/test/ja
 git commit -m "feat: add ConfigPersistenceService with atomic YAML write"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 10: ConfigService 整合持久化与启动恢复
@@ -2335,6 +2347,7 @@ git add src/main/java/com/opcua/config/ConfigService.java src/test/java/com/opcu
 git commit -m "feat: add persistence integration and thread-safety tests to ConfigService"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 11: OpcUaConfigManagementAutoConfiguration 自动配置
@@ -2521,6 +2534,7 @@ git add src/main/java/com/opcua/config/OpcUaConfigManagementAutoConfiguration.ja
 git commit -m "feat: add OpcUaConfigManagementAutoConfiguration wiring all beans"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 12: SystemController 系统状态端点
@@ -2587,6 +2601,7 @@ git add src/main/java/com/opcua/api/controller/SystemController.java
 git commit -m "feat: add SystemController with /api/health and /api/status endpoints"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 13: Docker 多阶段构建
@@ -2623,6 +2638,7 @@ git add Dockerfile
 git commit -m "feat: add multi-stage Dockerfile for Maven + JRE"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 14: Docker Compose 编排
@@ -2730,6 +2746,7 @@ git add docker-compose.yml src/main/resources/application-docker.yml
 git commit -m "feat: add docker-compose.yml with Kafka, InfluxDB, Redis services"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 15: Redis Session 共享
@@ -2764,6 +2781,7 @@ git add pom.xml
 git commit -m "feat: add spring-session-data-redis dependency for cluster session sharing"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ### Task 16: 全量集成测试验证
@@ -2809,6 +2827,7 @@ git add -A
 git commit -m "feat: complete opc-ua-config-management implementation with all tests passing"
 ```
 
+archived-with: 2026-06-20-opc-ua-config-management
 ---
 
 ## 自审清单

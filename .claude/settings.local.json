@@ -1,6 +1,5 @@
 {
   "permissions": {
-    "defaultMode": "bypassPermissions",
     "allow": [
       "Bash",
       "Bash(COMET_ENV=\"/c/Users/fly/.claude/skills/comet/scripts/comet-env.sh\")",
@@ -85,7 +84,10 @@
       "Bash(rm -f:*)",
       "Bash(cp:*)",
       "Bash(mv:*)",
-      "Skill(update-config)"
-    ]
+      "Skill(update-config)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebFetch(domain:docs.anthropic.com)"
+    ],
+    "defaultMode": "bypassPermissions"
   }
 }

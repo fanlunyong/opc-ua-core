@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OPC UA 核心采集层 — 数据架构图</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #020617;
+    color: #e2e8f0;
+    font-family: 'JetBrains Mono', monospace;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 40px 20px; min-height: 100vh;
+  }
+  .container { max-width: 1060px; width: 100%; }
+  .header {
+    text-align: center; margin-bottom: 32px;
+  }
+  .header h1 {
+    font-size: 22px; font-weight: 700; color: #f1f5f9;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .pulse {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #a78bfa; animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .header .subtitle { font-size: 11px; color: #64748b; margin-top: 6px; }
+  .diagram-card {
+    background: #0f172a; border: 1px solid #1e293b; border-radius: 12px;
+    padding: 24px; margin-bottom: 28px;
+  }
+  .diagram-card svg { width: 100%; height: auto; display: block; }
+  .summary {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+    margin-bottom: 28px;
+  }
+  .card {
+    background: #0f172a; border: 1px solid #1e293b; border-radius: 10px;
+    padding: 20px;
+  }
+  .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .card-dot.violet { background: #a78bfa; }
+  .card-dot.emerald { background: #34d399; }
+  .card-dot.amber { background: #fbbf24; }
+  .card h3 { font-size: 13px; font-weight: 600; color: #e2e8f0; }
+  .card ul { list-style: none; font-size: 11px; color: #94a3b8; line-height: 1.8; }
+  .card li::before { content: "› "; color: #475569; }
+  .footer {
+    text-align: center; font-size: 10px; color: #475569;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1><span class="pulse"></span>OPC UA 核心采集层 — 数据架构图</h1>
+    <div class="subtitle">Data Architecture · 数据流、数据模型与状态转换 · 2026-06-18</div>
+  </div>
+
+  <div class="diagram-card">
+    <svg viewBox="0 0 1000 860" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+        </pattern>
+        <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#64748b"/>
+        </marker>
+        <marker id="arrow-violet" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#a78bfa"/>
+        </marker>
+        <marker id="arrow-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#34d399"/>
+        </marker>
+        <marker id="arrow-amber" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24"/>
+        </marker>
+        <marker id="arrow-rose" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#fb7185"/>
+        </marker>
+      </defs>
+
+      <rect width="1000" height="860" fill="url(#grid)"/>
+
+      <!-- ===== SECTION 1: 配置数据流 ===== -->
+      <rect x="18" y="18" width="962" height="140" rx="10" fill="none" stroke="#a78bfa" stroke-width="1" stroke-dasharray="8,4" opacity="0.4"/>
+      <text x="36" y="36" fill="#a78bfa" font-size="9" font-weight="600">配置数据流 · Configuration Data Flow</text>
+
+      <!-- Row 1: 配置加载主链路 -->
+      <rect x="36" y="50" width="170" height="36" rx="6" fill="#0f172a"/>
+      <rect x="36" y="50" width="170" height="36" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="121" y="73" fill="#fff" font-size="10" font-weight="600" text-anchor="middle">application.yml</text>
+
+      <rect x="246" y="50" width="180" height="36" rx="6" fill="#0f172a"/>
+      <rect x="246" y="50" width="180" height="36" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="336" y="73" fill="#fff" font-size="10" font-weight="600" text-anchor="middle">OpcUaProperties</text>
+
+      <rect x="466" y="50" width="180" height="36" rx="6" fill="#0f172a"/>
+      <rect x="466" y="50" width="180" height="36" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="556" y="73" fill="#fff" font-size="10" font-weight="600" text-anchor="middle">DeviceConfig</text>
+
+      <rect x="686" y="50" width="180" height="36" rx="6" fill="#0f172a"/>
+      <rect x="686" y="50" width="180" height="36" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="776" y="73" fill="#fff" font-size="10" font-weight="600" text-anchor="middle">DeviceHandle</text>
+
+      <!-- Row 1 箭头 -->
+      <line x1="206" y1="68" x2="244" y2="68" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrow-violet)"/>
+      <line x1="426" y1="68" x2="464" y2="68" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrow-violet)"/>
+      <line x1="646" y1="68" x2="684" y2="68" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrow-violet)"/>
+
+      <!-- Row 1 子标签 -->
+      <text x="121" y="104" fill="#64748b" font-size="8" text-anchor="middle">opcua.* 前缀</text>
+      <text x="336" y="104" fill="#64748b" font-size="8" text-anchor="middle">@ConfigurationProperties</text>
+      <text x="556" y="104" fill="#64748b" font-size="8" text-anchor="middle">设备列表 + 安全 + 订阅/轮询</text>
+      <text x="776" y="104" fill="#64748b" font-size="8" text-anchor="middle">运行时句柄 + 连接池 + 状态</text>
+
+      <!-- Row 2: 运行时配置热更新 [规划中] -->
+      <rect x="686" y="118" width="180" height="36" rx="6" fill="#0f172a"/>
+      <rect x="686" y="118" width="180" height="36" rx="6" fill="rgba(120, 53, 15, 0.2)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <text x="776" y="138" fill="#fbbf24" font-size="9" font-weight="600" text-anchor="middle">REST API 热更新</text>
+      <text x="776" y="150" fill="#fbbf24" font-size="7" text-anchor="middle">⏳ 规划中 · 运行时修改配置</text>
+
+      <!-- REST API 热更新 → DeviceHandle 上行箭头 -->
+      <line x1="776" y1="118" x2="776" y2="88" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,2" marker-end="url(#arrow-amber)"/>
+
+      <!-- ===== SECTION 2: 采集数据流 ===== -->
+      <rect x="18" y="168" width="962" height="340" rx="10" fill="none" stroke="#34d399" stroke-width="1" stroke-dasharray="8,4" opacity="0.4"/>
+      <text x="36" y="186" fill="#34d399" font-size="9" font-weight="600">采集数据流 · Collection Data Flow</text>
+
+      <!-- OPC UA Server -->
+      <rect x="36" y="204" width="160" height="44" rx="6" fill="#0f172a"/>
+      <rect x="36" y="204" width="160" height="44" rx="6" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1.5"/>
+      <text x="116" y="224" fill="#e2e8f0" font-size="10" font-weight="600" text-anchor="middle">OPC UA Server</text>
+      <text x="116" y="240" fill="#94a3b8" font-size="8" text-anchor="middle">DataChangeNotification</text>
+
+      <!-- MiloClientWrapper -->
+      <rect x="240" y="204" width="170" height="44" rx="6" fill="#0f172a"/>
+      <rect x="240" y="204" width="170" height="44" rx="6" fill="rgba(8, 51, 68, 0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+      <text x="325" y="224" fill="#fff" font-size="10" font-weight="600" text-anchor="middle">MiloClientWrapper</text>
+      <text x="325" y="240" fill="#94a3b8" font-size="8" text-anchor="middle">OpcUaClient 封装</text>
+
+      <line x1="196" y1="226" x2="238" y2="226" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+      <!-- 订阅路径 -->
+      <rect x="36" y="280" width="220" height="56" rx="6" fill="#0f172a"/>
+      <rect x="36" y="280" width="220" height="56" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+      <text x="146" y="302" fill="#fff" font-size="10" font-weight="600" text-anchor="middle">SubscriptionManager</text>
+      <text x="146" y="318" fill="#94a3b8" font-size="8" text-anchor="middle">UaSubscription · 批次聚合</text>
+      <text x="146" y="332" fill="#22d3ee" font-size="7" text-anchor="middle">内建: QualityEvaluator + DataMapper + logIfNeeded</text>
+
+      <line x1="325" y1="248" x2="146" y2="278" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+
+      <!-- 轮询路径 -->
+      <rect x="300" y="280" width="220" height="56" rx="6" fill="#0f172a"/>
+      <rect x="300" y="280" width="220" height="56" rx="6" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1.5"/>
+      <text x="410" y="302" fill="#fff" font-size="10" font-weight="600" text-anchor="middle">ReadWriteHandler</text>
+      <text x="410" y="318" fill="#94a3b8" font-size="8" text-anchor="middle">定时轮询 (opcua-poll-*)</text>
+      <text x="410" y="332" fill="#22d3ee" font-size="7" text-anchor="middle">内建: QualityEvaluator + DataMapper + logIfNeeded</text>
+
+      <line x1="325" y1="248" x2="410" y2="278" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+
+      <!-- 两条路径均内建质量评估 -->
+      <rect x="36" y="360" width="484" height="36" rx="6" fill="#0f172a"/>
+      <rect x="36" y="360" width="484" height="36" rx="6" fill="rgba(136, 19, 55, 0.15)" stroke="#fb7185" stroke-width="1" stroke-dasharray="3,3"/>
+      <text x="278" y="376" fill="#fb7185" font-size="9" font-weight="600" text-anchor="middle">StatusCode → Quality 质量评估</text>
+      <text x="278" y="390" fill="#94a3b8" font-size="8" text-anchor="middle">订阅与轮询两条路径均内建 QualityEvaluator.evaluate() + logIfNeeded()</text>
+
+      <line x1="146" y1="336" x2="146" y2="358" stroke="#fb7185" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrow-rose)"/>
+      <line x1="410" y1="336" x2="410" y2="358" stroke="#fb7185" stroke-width="1" stroke-dasharray="3,3" marker-end="url(#arrow-rose)"/>
+
+      <!-- DataDispatchEngine -->
+      <rect x="600" y="280" width="240" height="116" rx="6" fill="#0f172a"/>
+      <rect x="600" y="280" width="240" height="116" rx="6" fill="rgba(251, 146, 60, 0.2)" stroke="#fb923c" stroke-width="1.5"/>
+      <text x="720" y="304" fill="#fff" font-size="11" font-weight="600" text-anchor="middle">DataDispatchEngine</text>
+      <text x="720" y="322" fill="#94a3b8" font-size="8" text-anchor="middle">分桶队列 (LinkedBlockingQueue)</text>
+      <text x="720" y="340" fill="#94a3b8" font-size="8" text-anchor="middle">hash(deviceId) % bucketCount</text>
+      <text x="720" y="358" fill="#94a3b8" font-size="8" text-anchor="middle">opcua-dispatch-{i} daemon</text>
+      <text x="720" y="376" fill="#94a3b8" font-size="8" text-anchor="middle">Drop-Oldest 背压</text>
+
+      <line x1="520" y1="378" x2="598" y2="338" stroke="#34d399" stroke-width="1.5" marker-end="url(#arrow-emerald)"/>
+
+      <!-- OpcUaDataListener -->
+      <rect x="600" y="420" width="240" height="40" rx="6" fill="#0f172a"/>
+      <rect x="600" y="420" width="240" height="40" rx="6" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="720" y="438" fill="#fff" font-size="10" font-weight="600" text-anchor="middle">OpcUaDataListener</text>
+      <text x="720" y="452" fill="#94a3b8" font-size="8" text-anchor="middle">CopyOnWriteArrayList 多播</text>
+
+      <line x1="720" y1="396" x2="720" y2="418" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrow-violet)"/>
+
+      <!-- ===== SECTION 3: 转发数据流 [规划中] ===== -->
+      <rect x="18" y="528" width="962" height="100" rx="10" fill="none" stroke="#fbbf24" stroke-width="1" stroke-dasharray="6,3" opacity="0.5"/>
+      <text x="36" y="546" fill="#fbbf24" font-size="9" font-weight="600">转发数据流 · Forward Data Flow</text>
+      <text x="180" y="546" fill="#fbbf24" font-size="8">⏳ 规划中</text>
+
+      <rect x="36" y="560" width="160" height="48" rx="6" fill="#0f172a"/>
+      <rect x="36" y="560" width="160" height="48" rx="6" fill="rgba(251, 146, 60, 0.2)" stroke="#fb923c" stroke-width="1.5"/>
+      <text x="116" y="582" fill="#fff" font-size="10" font-weight="600" text-anchor="middle">DataDispatchEngine</text>
+      <text x="116" y="598" fill="#94a3b8" font-size="8" text-anchor="middle">数据源</text>
+
+      <rect x="236" y="560" width="160" height="48" rx="6" fill="#0f172a"/>
+      <rect x="236" y="560" width="160" height="48" rx="6" fill="rgba(120, 53, 15, 0.2)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <text x="316" y="582" fill="#fff" font-size="10" font-weight="600" text-anchor="middle">ForwardHandler</text>
+      <text x="316" y="598" fill="#94a3b8" font-size="8" text-anchor="middle">路由分发</text>
+
+      <line x1="196" y1="584" x2="234" y2="584" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrow-amber)"/>
+
+      <rect x="436" y="560" width="110" height="48" rx="6" fill="#0f172a"/>
+      <rect x="436" y="560" width="110" height="48" rx="6" fill="rgba(120, 53, 15, 0.2)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <text x="491" y="582" fill="#fbbf24" font-size="9" font-weight="600" text-anchor="middle">HTTP</text>
+      <text x="491" y="598" fill="#94a3b8" font-size="8" text-anchor="middle">Webhook</text>
+
+      <rect x="560" y="560" width="110" height="48" rx="6" fill="#0f172a"/>
+      <rect x="560" y="560" width="110" height="48" rx="6" fill="rgba(120, 53, 15, 0.2)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <text x="615" y="582" fill="#fbbf24" font-size="9" font-weight="600" text-anchor="middle">Kafka</text>
+      <text x="615" y="598" fill="#94a3b8" font-size="8" text-anchor="middle">消息队列</text>
+
+      <rect x="684" y="560" width="110" height="48" rx="6" fill="#0f172a"/>
+      <rect x="684" y="560" width="110" height="48" rx="6" fill="rgba(120, 53, 15, 0.2)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <text x="739" y="582" fill="#fbbf24" font-size="9" font-weight="600" text-anchor="middle">MQTT</text>
+      <text x="739" y="598" fill="#94a3b8" font-size="8" text-anchor="middle">IoT 协议</text>
+
+      <rect x="808" y="560" width="110" height="48" rx="6" fill="#0f172a"/>
+      <rect x="808" y="560" width="110" height="48" rx="6" fill="rgba(120, 53, 15, 0.2)" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <text x="863" y="582" fill="#fbbf24" font-size="9" font-weight="600" text-anchor="middle">TSDB</text>
+      <text x="863" y="598" fill="#94a3b8" font-size="8" text-anchor="middle">时序库</text>
+
+      <line x1="396" y1="584" x2="434" y2="584" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#arrow-amber)"/>
+      <line x1="396" y1="575" x2="434" y2="560" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,2"/>
+      <line x1="396" y1="593" x2="434" y2="608" stroke="#fbbf24" stroke-width="1" stroke-dasharray="4,2"/>
+
+      <!-- ===== SECTION 4: 数据模型 ===== -->
+      <rect x="18" y="648" width="962" height="150" rx="10" fill="none" stroke="#fb7185" stroke-width="1" stroke-dasharray="8,4" opacity="0.4"/>
+      <text x="36" y="666" fill="#fb7185" font-size="9" font-weight="600">核心数据模型 · Core Data Models</text>
+
+      <!-- OpcUaDeviceData -->
+      <rect x="36" y="680" width="240" height="100" rx="6" fill="#0f172a"/>
+      <rect x="36" y="680" width="240" height="100" rx="6" fill="rgba(76, 29, 149, 0.3)" stroke="#a78bfa" stroke-width="1.5"/>
+      <text x="156" y="702" fill="#fff" font-size="11" font-weight="600" text-anchor="middle">OpcUaDeviceData</text>
+      <line x1="46" y1="712" x2="266" y2="712" stroke="#334155" stroke-width="0.5"/>
+      <text x="52" y="728" fill="#94a3b8" font-size="8">timestamp : Instant</text>
+      <text x="52" y="742" fill="#94a3b8" font-size="8">sourceInfo : SourceInfo</text>
+      <text x="52" y="756" fill="#94a3b8" font-size="8">dataPoints : List&lt;OpcUaDataPoint&gt;</text>
+      <text x="52" y="770" fill="#64748b" font-size="7">SourceInfo { productId, deviceId, endpointUrl }</text>
+
+      <!-- OpcUaDataPoint -->
+      <rect x="300" y="680" width="240" height="100" rx="6" fill="#0f172a"/>
+      <rect x="300" y="680" width="240" height="100" rx="6" fill="rgba(6, 78, 59, 0.3)" stroke="#34d399" stroke-width="1.5"/>
+      <text x="420" y="702" fill="#fff" font-size="11" font-weight="600" text-anchor="middle">OpcUaDataPoint</text>
+      <line x1="310" y1="712" x2="530" y2="712" stroke="#334155" stroke-width="0.5"/>
+      <text x="316" y="728" fill="#94a3b8" font-size="8">nodeId : String</text>
+      <text x="316" y="742" fill="#94a3b8" font-size="8">displayName : String</text>
+      <text x="316" y="756" fill="#94a3b8" font-size="8">value : Object</text>
+      <text x="316" y="770" fill="#94a3b8" font-size="8">dataType : String</text>
+
+      <!-- 第二列 -->
+      <text x="556" y="728" fill="#94a3b8" font-size="8">quality : Quality</text>
+      <text x="556" y="742" fill="#94a3b8" font-size="8">qualityCheck : boolean</text>
+      <text x="556" y="756" fill="#94a3b8" font-size="8">statusCode : String (hex)</text>
+      <text x="556" y="770" fill="#94a3b8" font-size="8">source/serverTimestamp</text>
+
+      <!-- DeviceState -->
+      <rect x="570" y="680" width="190" height="100" rx="6" fill="#0f172a"/>
+      <rect x="570" y="680" width="190" height="100" rx="6" fill="rgba(136, 19, 55, 0.2)" stroke="#fb7185" stroke-width="1.5"/>
+      <text x="665" y="702" fill="#fff" font-size="11" font-weight="600" text-anchor="middle">DeviceState</text>
+      <line x1="580" y1="712" x2="750" y2="712" stroke="#334155" stroke-width="0.5"/>
+      <text x="586" y="728" fill="#94a3b8" font-size="8">deviceId : String</text>
+      <text x="586" y="742" fill="#94a3b8" font-size="8">connectionState : enum</text>
+      <text x="586" y="756" fill="#94a3b8" font-size="8">connectedSince : Instant</text>
+      <text x="586" y="770" fill="#94a3b8" font-size="8">lastDataReceived</text>
+
+      <!-- 枚举 -->
+      <rect x="780" y="680" width="90" height="46" rx="6" fill="#0f172a"/>
+      <rect x="780" y="680" width="90" height="46" rx="6" fill="rgba(136, 19, 55, 0.2)" stroke="#fb7185" stroke-width="1.5"/>
+      <text x="825" y="700" fill="#94a3b8" font-size="8" text-anchor="middle">ConnectionState</text>
+      <text x="825" y="716" fill="#64748b" font-size="7" text-anchor="middle">CONNECTED</text>
+      <text x="825" y="726" fill="#64748b" font-size="7" text-anchor="middle">RECONNECTING</text>
+
+      <rect x="880" y="680" width="82" height="46" rx="6" fill="#0f172a"/>
+      <rect x="880" y="680" width="82" height="46" rx="6" fill="rgba(136, 19, 55, 0.2)" stroke="#fb7185" stroke-width="1.5"/>
+      <text x="921" y="700" fill="#94a3b8" font-size="8" text-anchor="middle">Quality</text>
+      <text x="921" y="716" fill="#64748b" font-size="7" text-anchor="middle">Good</text>
+      <text x="921" y="726" fill="#64748b" font-size="7" text-anchor="middle">Bad</text>
+
+      <rect x="780" y="734" width="90" height="20" rx="3" fill="rgba(136, 19, 55, 0.2)" stroke="#fb7185" stroke-width="1"/>
+      <text x="825" y="748" fill="#64748b" font-size="7" text-anchor="middle">DISCONNECTED</text>
+
+      <rect x="880" y="734" width="82" height="20" rx="3" fill="rgba(136, 19, 55, 0.2)" stroke="#fb7185" stroke-width="1"/>
+      <text x="921" y="748" fill="#64748b" font-size="7" text-anchor="middle">Uncertain</text>
+
+      <!-- 模型关系 -->
+      <line x1="276" y1="730" x2="298" y2="730" stroke="#a78bfa" stroke-width="1" marker-end="url(#arrow-violet)"/>
+      <line x1="540" y1="730" x2="568" y2="730" stroke="#34d399" stroke-width="1" marker-end="url(#arrow-emerald)"/>
+
+      <!-- ===== Legend ===== -->
+      <rect x="18" y="814" width="962" height="34" rx="6" fill="#0f172a" stroke="#1e293b" stroke-width="1"/>
+      <rect x="36" y="824" width="14" height="14" rx="3" fill="rgba(76, 29, 149, 0.4)" stroke="#a78bfa" stroke-width="1"/>
+      <text x="56" y="836" fill="#94a3b8" font-size="9">配置/模型</text>
+      <rect x="170" y="824" width="14" height="14" rx="3" fill="rgba(6, 78, 59, 0.4)" stroke="#34d399" stroke-width="1"/>
+      <text x="190" y="836" fill="#94a3b8" font-size="9">采集数据流</text>
+      <rect x="320" y="824" width="14" height="14" rx="3" fill="rgba(251, 146, 60, 0.2)" stroke="#fb923c" stroke-width="1"/>
+      <text x="340" y="836" fill="#94a3b8" font-size="9">分发引擎</text>
+      <rect x="460" y="824" width="14" height="14" rx="3" fill="rgba(120, 53, 15, 0.2)" stroke="#fbbf24" stroke-width="1"/>
+      <text x="480" y="836" fill="#94a3b8" font-size="9">规划中</text>
+      <rect x="600" y="824" width="14" height="14" rx="3" fill="rgba(136, 19, 55, 0.2)" stroke="#fb7185" stroke-width="1"/>
+      <text x="620" y="836" fill="#94a3b8" font-size="9">状态/质量评估</text>
+      <rect x="740" y="824" width="14" height="14" rx="3" fill="rgba(30, 41, 59, 0.5)" stroke="#94a3b8" stroke-width="1"/>
+      <text x="760" y="836" fill="#94a3b8" font-size="9">外部数据源</text>
+    </svg>
+  </div>
+
+  <div class="summary">
+    <div class="card">
+      <div class="card-header"><div class="card-dot violet"></div><h3>配置数据流</h3></div>
+      <ul>
+        <li>application.yml → OpcUaProperties 绑定</li>
+        <li>DeviceConfig: 设备、安全、订阅、轮询</li>
+        <li>DeviceHandle: 运行时连接池句柄</li>
+        <li>REST API 热更新（规划中）</li>
+        <li>类型安全 + @ConfigurationProperties</li>
+        <li>@JsonIgnore 敏感字段保护</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-dot emerald"></div><h3>采集数据流</h3></div>
+      <ul>
+        <li>订阅: NotificationListener 批次聚合</li>
+        <li>轮询: opcua-poll-* 定时线程池</li>
+        <li>QualityEvaluator: StatusCode→Quality</li>
+        <li>DataMapper: displayName/dataType 回退</li>
+        <li>DataDispatchEngine: 分桶 + 哈希路由</li>
+        <li>CopyOnWriteArrayList 多播监听器</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-dot amber"></div><h3>数据模型</h3></div>
+      <ul>
+        <li>OpcUaDeviceData: 顶层数据容器</li>
+        <li>OpcUaDataPoint: 单点数据值对象</li>
+        <li>DeviceState: 设备连接状态快照</li>
+        <li>ConnectionState: CONNECTED/RECONNECTING/DISCONNECTED</li>
+        <li>Quality: Good/Bad/Uncertain</li>
+        <li>转发数据流: 4 通道输出（规划中）</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">OPC UA Core · Data Architecture Diagram · Generated 2026-06-18</div>
+
+</div>
+</body>
+</html>

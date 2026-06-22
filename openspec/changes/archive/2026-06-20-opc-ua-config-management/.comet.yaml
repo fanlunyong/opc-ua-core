@@ -1,5 +1,5 @@
 workflow: full
-phase: verify
+phase: archive
 context_compression: off
 build_mode: executing-plans
 build_pause: null
@@ -11,11 +11,11 @@ auto_transition: true
 base_ref: null
 design_doc: docs/superpowers/specs/2026-06-17-opc-ua-config-management-design.md
 plan: docs/superpowers/plans/2026-06-20-opc-ua-config-management.md
-verify_result: pending
+verify_result: pass
 verification_report: docs/superpowers/reports/2026-06-20-opc-ua-config-management-verify.md
 branch_status: handled
 created_at: 2026-06-17
-verified_at: null
-archived: false
+verified_at: 2026-06-20
+archived: true
 handoff_context: openspec/changes/opc-ua-config-management/.comet/handoff/design-context.json
 handoff_hash: 70a2fbe1f5a4220395d77ed9879eaedae60891acba989bf5cb5b25cc7c30c921
